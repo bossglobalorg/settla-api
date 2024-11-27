@@ -14,6 +14,7 @@ import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { MailService } from 'src/global/services/mail/mail.service';
+import { VerifyOtpDto } from './dto/verify-otp.dto';
 
 @ApiTags('user')
 @Controller('user')
@@ -39,6 +40,19 @@ export class UserController {
   @Post('login')
   async login(@Body() login: LoginDto) {
     const token = await this.authService.login(login);
+
+    return {
+      message: 'Login successful',
+      token,
+    };
+  }
+
+  @Post('verify-otp')
+  async verifyTimedOtp(@Body() verifyOtp: VerifyOtpDto) {
+    const token = await this.authService.verifyOtp(
+      verifyOtp.email,
+      verifyOtp.otp,
+    );
 
     return {
       message: 'Login successful',

@@ -13,7 +13,7 @@ export default class OTPService {
     }
 
     this.resetExpiryTime = authConfig.auth.resetExpiryTime || 300; // Default 5 minutes
-    this.confirmationExpiryTime = 300; // Can be moved to config if dynamic
+    this.confirmationExpiryTime = authConfig.auth.verifyExpiryTime || 300; // Can be moved to config if dynamic
   }
 
   /**
@@ -35,6 +35,7 @@ export default class OTPService {
     const expiryTime = this.getExpiryTime(otpType);
 
     const key = this.generateBase32Key(email);
+
     const otp = speakeasy.totp({
       secret: key,
       encoding: 'base32',
@@ -60,6 +61,7 @@ export default class OTPService {
     const expiryTime = this.getExpiryTime(otpType);
 
     const key = this.generateBase32Key(email);
+
     return speakeasy.totp.verify({
       secret: key,
       encoding: 'base32',
@@ -76,8 +78,7 @@ export default class OTPService {
   private generateBase32Key(email: string): string {
     const rawKey = Buffer.from(email).toString('base64').substring(0, 32);
     const secretKey = 'mysecret';
-    const timestamp = Date.now();
 
-    return `${rawKey}${timestamp}${secretKey}`;
+    return `${rawKey}${secretKey}`;
   }
 }

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../../entities/user.entity';
 import { Repository } from 'typeorm';
@@ -39,13 +39,10 @@ export class UserService {
     let newUser = this.usersRepository.create(userPayload);
     newUser = await this.updateUser(newUser);
 
-    newUser.token = this.getUserToken(newUser);
-
     const { otp, expiryTime } = await this.otpService.generateTimedOtp(
       newUser.email,
     );
 
-    console.log({ otp });
     this.sendUserOtp(newUser.email, otp, expiryTime);
     return await this.updateUser(newUser);
   }
@@ -93,9 +90,39 @@ export class UserService {
     });
   }
 
+  async verifyOtpAndGenerateToken(
+    email: string,
+    submittedOtp: string,
+  ): Promise<string> {
+    const user = await this.isUserExists(email);
+
+    // Explicitly check for null and handle the error
+    if (!user) {
+      throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
+    }
+
+    // Verify the submitted OTP
+    const isValid = await this.otpService.verifyTimedOtp(email, submittedOtp);
+
+    console.log({ isValid });
+
+    if (!isValid) {
+      throw new HttpException(
+        'OTP Verification failed',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return this.getUserToken(user);
+  }
+
   public getAll(): Promise<UserEntity[]> {
     return this.usersRepository.find({
       select: ['id', 'email', 'lastName', 'firstName', 'businessName'],
     });
+  }
+
+  private failVerifyOtp(message = 'OTP Verification failed') {
+    throw new HttpException(message, HttpStatus.BAD_REQUEST);
   }
 }
