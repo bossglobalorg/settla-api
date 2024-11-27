@@ -13,6 +13,7 @@ import { UserService } from './services/user/user.service';
 import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor } from '@nestjs/cache-manager';
+import { MailService } from 'src/global/services/mail/mail.service';
 
 @ApiTags('user')
 @Controller('user')
@@ -20,12 +21,13 @@ export class UserController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
+    private readonly mailService: MailService, // Inject MailService
   ) {}
 
   @Post('register')
   async register(@Body() user: CreateUserDto) {
     const newUser = await this.authService.register(user);
-
+    
     return {
       message: 'User created',
       user: {

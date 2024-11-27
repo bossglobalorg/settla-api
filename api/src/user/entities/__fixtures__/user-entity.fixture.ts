@@ -8,6 +8,9 @@ export const mockUserEntity: UserEntity = {
   token: 'token',
   passwordHash: 'password',
   businessName: 'businessName',
+  emailVerificationToken: 'test-token',
+  emailVerified: false,
+  emailVerificationTokenExpiresAt: new Date(),
   dateCreated: new Date(),
   dateUpdated: new Date(),
 };
