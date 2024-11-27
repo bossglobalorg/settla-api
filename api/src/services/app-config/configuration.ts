@@ -12,6 +12,10 @@ export const getConfig = (): AppConfig => {
       dbName: process.env.DB_NAME as string,
       isSync: process.env.DB_SYNC === 'true',
     },
+    auth: {
+      resetExpiryTime: 300,
+      verifyExpiryTime: 300,
+    },
     cache: {
       host: process.env.REDIS_HOST as string,
       port: parseInt(process.env.REDIS_PORT as string, 10) || 6379,
@@ -39,6 +43,7 @@ export interface AppConfig {
   database: DbConfig;
   cache: CacheConfig;
   mail: MailConfig;
+  auth: AuthConfig;
 }
 
 export enum AppEnv {
@@ -72,4 +77,9 @@ export interface MailConfig {
       pass: string;
     };
   };
+}
+
+export interface AuthConfig {
+  resetExpiryTime: number;
+  verifyExpiryTime: number;
 }

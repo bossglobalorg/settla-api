@@ -21,13 +21,12 @@ export class UserController {
   constructor(
     private readonly authService: AuthService,
     private readonly userService: UserService,
-    private readonly mailService: MailService, // Inject MailService
   ) {}
 
   @Post('register')
   async register(@Body() user: CreateUserDto) {
     const newUser = await this.authService.register(user);
-    
+
     return {
       message: 'User created',
       user: {
