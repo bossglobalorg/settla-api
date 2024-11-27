@@ -1,10 +1,12 @@
-import { Injectable } from '@nestjs/common';
+import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserEntity } from '../../entities/user.entity';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '../../dto/create-user.dto';
 import { PasswordService } from '../password/password.service';
 import { JwtService } from '../jwt/jwt.service';
+import { MailService } from 'src/global/services/mail/mail.service';
+import OTPService from '../otp/otp.service';
 
 @Injectable()
 export class UserService {
@@ -13,6 +15,8 @@ export class UserService {
     private usersRepository: Repository<UserEntity>,
     private readonly passwordService: PasswordService,
     private readonly jwtService: JwtService,
+    private readonly mailService: MailService,
+    private readonly otpService: OTPService, // Inject MailService
   ) {}
 
   async isUserExists(email: string): Promise<UserEntity | null> {
@@ -35,7 +39,11 @@ export class UserService {
     let newUser = this.usersRepository.create(userPayload);
     newUser = await this.updateUser(newUser);
 
-    newUser.token = this.getUserToken(newUser);
+    const { otp, expiryTime } = await this.otpService.generateTimedOtp(
+      newUser.email,
+    );
+
+    this.sendUserOtp(newUser.email, otp, expiryTime);
     return await this.updateUser(newUser);
   }
 
@@ -60,9 +68,61 @@ export class UserService {
     });
   }
 
+  private async sendUserOtp(
+    email: string,
+    otp: string,
+    expiryTime: number,
+  ): Promise<void> {
+    const subject = 'Your OTP for Registration';
+    const htmlContent = `
+      <p>Dear user,</p>
+      <p>Thank you for registering on our platform. Please use the following OTP to complete your registration:</p>
+      <h3>${otp}</h3>
+      <p>This OTP is valid for ${expiryTime} minutes. Do not share it with anyone.</p>
+      <p>Best regards,<br>Your Team</p>
+    `;
+
+    await this.mailService.send({
+      to: email,
+      from: this.mailService.from(),
+      subject,
+      html: htmlContent,
+    });
+  }
+
+  async verifyOtpAndGenerateToken(
+    email: string,
+    submittedOtp: string,
+  ): Promise<string> {
+    const user = await this.isUserExists(email);
+
+    // Explicitly check for null and handle the error
+    if (!user) {
+      throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
+    }
+
+    // Verify the submitted OTP
+    const isValid = await this.otpService.verifyTimedOtp(email, submittedOtp);
+
+    console.log({ isValid });
+
+    if (!isValid) {
+      throw new HttpException(
+        'OTP Verification failed',
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+
+    return this.getUserToken(user);
+  }
+
   public getAll(): Promise<UserEntity[]> {
     return this.usersRepository.find({
       select: ['id', 'email', 'lastName', 'firstName', 'businessName'],
     });
+  }
+
+  private failVerifyOtp(message = 'OTP Verification failed') {
+    throw new HttpException(message, HttpStatus.BAD_REQUEST);
   }
 }

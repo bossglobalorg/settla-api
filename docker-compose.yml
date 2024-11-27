@@ -7,8 +7,9 @@ services:
     image: postgres
     restart: always
     environment:
-      POSTGRES_PASSWORD: secret
-      POSTGRES_DB: api
+      POSTGRES_PASSWORD: secret 
+      POSTGRES_DB: api          
+      POSTGRES_USER: postgres 
     volumes:
       - ./.data/db:/var/lib/postgresql/data
     ports:

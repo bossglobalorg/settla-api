@@ -55,6 +55,7 @@ describe('UserController', () => {
         businessName: 'businessName',
         dateCreated: new Date(),
         dateUpdated: new Date(),
+        emailVerified: false,
       });
 
       expect(

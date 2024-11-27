@@ -5,6 +5,7 @@ import { AppLoggerService } from './logger/services/app-logger/app-logger.servic
 import { json } from 'body-parser';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import helmet from 'helmet';
+// import hbs from 'hbs';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -18,6 +19,8 @@ async function bootstrap() {
   app.use(helmet());
 
   app.enableShutdownHooks();
+
+  // app.use(hbs);
 
   app.useGlobalPipes(
     new ValidationPipe({
