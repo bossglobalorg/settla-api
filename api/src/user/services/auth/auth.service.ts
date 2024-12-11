@@ -36,6 +36,10 @@ export class AuthService {
     this.failLogin('Incorrect password');
   }
 
+  async verifyOtp(email: string, otp: string): Promise<string> {
+    return this.userService.verifyOtpAndGenerateToken(email, otp);
+  }
+
   private failLogin(message = 'Login failed') {
     throw new HttpException(message, HttpStatus.BAD_REQUEST);
   }

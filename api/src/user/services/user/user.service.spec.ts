@@ -69,6 +69,7 @@ describe('UserService', () => {
       firstName: 'fName',
       lastName: 'lName',
       password: 'password',
+      businessName: 'bName'
     });
 
     expect(newUser).toStrictEqual(mockUserEntity);
