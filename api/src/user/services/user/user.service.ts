@@ -6,7 +6,7 @@ import { CreateUserDto } from '../../dto/create-user.dto';
 import { PasswordService } from '../password/password.service';
 import { JwtService } from '../jwt/jwt.service';
 import { MailService } from 'src/global/services/mail/mail.service';
-import OTPService from '../otp/otp.service';
+import { OTPService } from '../otp/otp.service';
 
 @Injectable()
 export class UserService {
@@ -70,7 +70,7 @@ export class UserService {
 
   private async sendUserOtp(
     email: string,
-    otp: string,
+    otp: string | null,
     expiryTime: number,
   ): Promise<void> {
     const subject = 'Your OTP for Registration';
@@ -96,24 +96,34 @@ export class UserService {
   ): Promise<string> {
     const user = await this.isUserExists(email);
 
-    // Explicitly check for null and handle the error
     if (!user) {
       throw new HttpException('User not found.', HttpStatus.NOT_FOUND);
     }
 
-    // Verify the submitted OTP
-    const isValid = await this.otpService.verifyTimedOtp(email, submittedOtp);
+    try {
+      // Test OTP flow to debug
+      const testResult = await this.otpService.testOtpFlow(email);
+      console.log('Test OTP Flow:', testResult);
 
-    console.log({ isValid });
+      // Verify the submitted OTP
+      const isValid = await this.otpService.verifyTimedOtp(email, submittedOtp);
+      console.log('OTP Verification Result:', { email, submittedOtp, isValid });
 
-    if (!isValid) {
+      if (!isValid) {
+        throw new HttpException(
+          'OTP Verification failed',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
+      return this.getUserToken(user);
+    } catch (error) {
+      console.error('OTP Verification Error:', error);
       throw new HttpException(
-        'OTP Verification failed',
+        error.message || 'OTP Verification failed',
         HttpStatus.BAD_REQUEST,
       );
     }
-
-    return this.getUserToken(user);
   }
 
   public getAll(): Promise<UserEntity[]> {

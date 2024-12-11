@@ -9,7 +9,7 @@ import { JwtService } from './services/jwt/jwt.service';
 import { ConfigModule } from '@nestjs/config';
 import { JwtStrategy } from './services/auth/strategies/jwt/jwt.strategy';
 import { AppCacheModule } from '../app-cache/app-cache.module';
-import OTPService from './services/otp/otp.service';
+import { OTPService } from './services/otp/otp.service';
 
 @Module({
   imports: [

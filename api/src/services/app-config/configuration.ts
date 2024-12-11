@@ -15,6 +15,7 @@ export const getConfig = (): AppConfig => {
     auth: {
       resetExpiryTime: 300,
       verifyExpiryTime: 300,
+      otpSecret: "test"
     },
     cache: {
       host: process.env.REDIS_HOST as string,
@@ -82,4 +83,5 @@ export interface MailConfig {
 export interface AuthConfig {
   resetExpiryTime: number;
   verifyExpiryTime: number;
+  otpSecret: string
 }
