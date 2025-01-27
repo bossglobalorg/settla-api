@@ -56,6 +56,9 @@ describe('UserController', () => {
         dateCreated: new Date(),
         dateUpdated: new Date(),
         emailVerified: false,
+        kyc_response: '',
+        kyc_status: 'verified',
+        businesses: [],
       });
 
       expect(

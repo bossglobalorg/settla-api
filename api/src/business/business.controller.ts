@@ -11,6 +11,7 @@ import {
   Query,
   HttpStatus,
   HttpException,
+  Req,
 } from '@nestjs/common';
 import { BusinessService } from './services/business/business.service';
 import { JwtAuthGuard } from '../user/guards/jwt-auth/jwt-auth.guard';
@@ -23,12 +24,22 @@ import { Business } from './entities/business.entity';
 export class BusinessController {
   constructor(private readonly businessService: BusinessService) {}
 
+  // business.controller.ts
   @Post()
   async createBusiness(
-    @Body() createBusinessDto: CreateBusinessDto,
+    @Req() req: Request & { user: { id: string } },
+    @Body()
+    createBusinessDto: Omit<CreateBusinessDto, 'owner_id' | 'id_upload'>,
   ): Promise<Business> {
     try {
-      return await this.businessService.create(createBusinessDto);
+      // Create the complete business data
+      const businessData: CreateBusinessDto = {
+        ...createBusinessDto,
+        owner_id: req.user.id,
+        id_upload: 'placeholder',
+      };
+
+      return await this.businessService.create(businessData);
     } catch (error) {
       throw new HttpException(
         'Failed to create business',

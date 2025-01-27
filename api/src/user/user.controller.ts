@@ -13,7 +13,6 @@ import { UserService } from './services/user/user.service';
 import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor } from '@nestjs/cache-manager';
-import { MailService } from 'src/global/services/mail/mail.service';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 
 @ApiTags('user')
