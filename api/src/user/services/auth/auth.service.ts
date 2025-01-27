@@ -25,6 +25,10 @@ export class AuthService {
       return this.failLogin();
     }
 
+    if (!user.emailVerified) {
+      this.failLogin('Please verify your email before logging in');
+    }
+
     if (await this.userService.checkUserPassword(user, password)) {
       const token = this.userService.getUserToken(user);
       user.token = token;

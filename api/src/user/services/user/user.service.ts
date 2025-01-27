@@ -116,6 +116,14 @@ export class UserService {
         );
       }
 
+      const user = await this.usersRepository.findOne({ where: { email } });
+      if (!user) {
+        throw new HttpException('User not found', HttpStatus.NOT_FOUND);
+      }
+
+      user.emailVerified = true;
+      await this.usersRepository.save(user);
+
       return this.getUserToken(user);
     } catch (error) {
       console.error('OTP Verification Error:', error);
