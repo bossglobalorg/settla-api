@@ -11,4 +11,7 @@ export const mockUserEntity: UserEntity = {
   emailVerified: false,
   dateCreated: new Date(),
   dateUpdated: new Date(),
+  kyc_status: 'verified',
+  kyc_response: null,
+  businesses: [],
 };
