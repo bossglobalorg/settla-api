@@ -21,7 +21,7 @@ export class KybService {
         })
         .toPromise();
 
-      return response.data;
+      return response?.data;
     } catch (error) {
       throw new Error(`Business verification failed: ${error.message}`);
     }
@@ -38,7 +38,7 @@ export class KybService {
         })
         .toPromise();
 
-      return response.data;
+      return response?.data;
     } catch (error) {
       throw new Error(`Individual verification failed: ${error.message}`);
     }
