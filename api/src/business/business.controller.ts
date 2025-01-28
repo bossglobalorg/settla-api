@@ -16,18 +16,22 @@ import {
   ParseIntPipe,
   UploadedFile,
   UseInterceptors,
+  ValidationPipe,
+  UseFilters,
+  UsePipes,
 } from '@nestjs/common';
 import { BusinessService } from './services/business/business.service';
 import { JwtAuthGuard } from '../user/guards/jwt-auth/jwt-auth.guard';
-import { CreateBusinessDto } from './dto/create-business.dto';
 import { UpdateBusinessDto } from './dto/update-business.dto';
 import { Business } from './entities/business.entity';
 import { CloudinaryService } from '../global/services/cloudinary/cloudinary.service';
 import { FileInterceptor } from '@nestjs/platform-express';
-import { BusinessDataTransformer } from './utils/business.transformer';
+import { AllExceptionsFilter } from 'src/global/filters/http-exception.filter';
+import { CreateBusinessDto } from './dto/create-business.dto';
 
 @Controller('businesses')
 @UseGuards(JwtAuthGuard)
+@UseFilters(AllExceptionsFilter)
 export class BusinessController {
   constructor(
     private readonly businessService: BusinessService,
@@ -36,36 +40,65 @@ export class BusinessController {
 
   @Post()
   @UseInterceptors(FileInterceptor('id_document'))
+  @UsePipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      errorHttpStatusCode: HttpStatus.UNPROCESSABLE_ENTITY,
+    }),
+  )
   async createBusiness(
     @Req() req: Request & { user: { id: string } },
-    @Body() businessData: any,
+    @Body() rawBusinessData: any,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<Business> {
     try {
       if (!file) {
         throw new HttpException(
-          'Business ID document is required',
+          {
+            message: 'Validation failed',
+            errors: ['Business ID document is required'],
+          },
           HttpStatus.BAD_REQUEST,
         );
       }
 
       const uploadResult = await this.cloudinaryService.uploadDocument(file);
 
-      const transformedData = BusinessDataTransformer.transform(
-        businessData,
-        req.user.id,
-        uploadResult.secure_url,
-      );
+      let address;
+      if ('address' in rawBusinessData && rawBusinessData.address) {
+        address = rawBusinessData.address;
+      } else {
+        address = {
+          line1: rawBusinessData['address.line1'],
+          line2: rawBusinessData['address.line2'],
+          city: rawBusinessData['address.city'],
+          state: rawBusinessData['address.state'],
+          country: rawBusinessData['address.country'],
+          postal_code: rawBusinessData['address.postal_code'],
+        };
+      }
 
-      return await this.businessService.create(transformedData);
+      // Construct the business data
+      const businessData: CreateBusinessDto = {
+        ...rawBusinessData,
+        owner_id: req.user.id,
+        id_upload: uploadResult.secure_url,
+        address,
+        dof: new Date(rawBusinessData.dof),
+      };
+
+      return await this.businessService.create(businessData);
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
       }
-
-      console.error('Business creation error:', error);
       throw new HttpException(
-        'Failed to create business',
+        {
+          message: 'Failed to create business',
+          errors: [error.message],
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

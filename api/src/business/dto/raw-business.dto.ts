@@ -1,68 +1,29 @@
+// src/business/dto/raw-business.dto.ts
 import {
-  IsNotEmpty,
   IsString,
-  IsEnum,
-  IsObject,
-  IsOptional,
+  IsNotEmpty,
   IsEmail,
-  IsPhoneNumber,
-  ValidateNested,
-  IsISO8601,
+  IsOptional,
   ValidateIf,
+  Matches,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 
-export class AddressDto {
-  @IsString()
-  @IsNotEmpty({ message: 'Address line 1 is required' })
-  line1: string;
-
-  @IsOptional()
-  @IsString()
-  line2?: string;
-
-  @IsString()
-  @IsNotEmpty({ message: 'City is required' })
-  city: string;
-
-  @IsString()
-  @IsNotEmpty({ message: 'State is required' })
-  state: string;
-
-  @IsString()
-  @IsNotEmpty({ message: 'Country is required' })
-  country: string;
-
-  @IsString()
-  @IsNotEmpty({ message: 'Postal code is required' })
-  postal_code: string;
-}
-
-export class CreateBusinessDto {
-  @IsString()
-  @IsNotEmpty()
-  owner_id: string;
-
+export class RawBusinessDto {
   @IsString()
   @IsNotEmpty({ message: 'Business name is required' })
   name: string;
 
   @IsString()
-  @IsEnum(['soleProprietor', 'singleMemberLLC', 'limitedLiabilityCompany'], {
-    message: 'Invalid business type selected',
-  })
+  @IsNotEmpty({ message: 'Business type is required' })
   business_type: string;
 
   @IsString()
-  @IsEnum(['restaurants', 'hotelMotel', 'otherFoodServices'], {
-    message: 'Invalid industry selected',
-  })
+  @IsNotEmpty({ message: 'Industry is required' })
   industry: string;
 
   @IsString()
-  @IsEnum(['ein', 'cac'], {
-    message: 'Invalid ID type selected',
-  })
+  @IsNotEmpty({ message: 'ID type is required' })
   id_type: string;
 
   @IsString()
@@ -70,42 +31,41 @@ export class CreateBusinessDto {
   id_number: string;
 
   @IsString()
-  @IsEnum(['US', 'NG'], {
-    message: 'Invalid country selected',
-  })
+  @IsNotEmpty({ message: 'ID country is required' })
   id_country: string;
 
   @IsString()
-  @IsNotEmpty()
-  id_upload: string;
-
-  @IsString()
-  @IsEnum(['primary', 'secondary'], {
-    message: 'Invalid ID level selected',
-  })
+  @IsNotEmpty({ message: 'ID level is required' })
   id_level: string;
 
-  @IsISO8601()
+  @IsString()
   @IsNotEmpty({ message: 'Date of foundation is required' })
-  @Type(() => Date)
-  dof: Date;
+  dof: string;
 
-  @IsPhoneNumber(undefined, { message: 'Please provide a valid phone number' })
+  @IsString()
   @IsNotEmpty({ message: 'Contact phone is required' })
+  @Matches(/^\+?[1-9]\d{1,14}$/, {
+    message: 'Contact phone must be a valid phone number (e.g., +1234567890)',
+  })
   contact_phone: string;
 
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Contact email is required' })
   contact_email: string;
 
-  // For nested address format
+  // For nested object format
   @ValidateIf((o) => !o['address.line1'])
-  @IsObject()
-  @ValidateNested()
-  @Type(() => AddressDto)
-  address?: AddressDto;
+  @IsOptional()
+  address?: {
+    line1: string;
+    line2?: string;
+    city: string;
+    state: string;
+    country: string;
+    postal_code: string;
+  };
 
-  // For flat address format
+  // For flat format
   @ValidateIf((o) => !o.address)
   @IsString()
   @IsNotEmpty({ message: 'Address line 1 is required' })

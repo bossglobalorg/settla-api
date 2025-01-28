@@ -1,71 +1,104 @@
-// src/business/services/business.service.ts
-import { Injectable, HttpException, HttpStatus, Logger } from '@nestjs/common';
+// src/business/services/business/business.service.ts
+import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Not, Repository } from 'typeorm';
 import { Business } from '../../entities/business.entity';
 import { CreateBusinessDto } from '../../dto/create-business.dto';
 import { UpdateBusinessDto } from '../../dto/update-business.dto';
-import { HttpService } from '@nestjs/axios';
-import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class BusinessService {
   constructor(
     @InjectRepository(Business)
     private readonly businessRepository: Repository<Business>,
-    private readonly httpService: HttpService,
-    private readonly configService: ConfigService,
   ) {}
 
   async create(createBusinessDto: CreateBusinessDto): Promise<Business> {
     try {
+      const existingBusiness = await this.businessRepository.findOne({
+        where: [
+          { name: createBusinessDto.name },
+          { id_number: createBusinessDto.id_number },
+        ],
+      });
+
+      if (existingBusiness) {
+        throw new HttpException(
+          {
+            message: 'Business already exists',
+            errors: ['A business with this name or ID number already exists'],
+          },
+          HttpStatus.CONFLICT,
+        );
+      }
+
       const business = this.businessRepository.create(createBusinessDto);
       return await this.businessRepository.save(business);
     } catch (error) {
-      console.log({ error });
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      // Handle database-specific errors
+      if (error.code === '23505') {
+        // PostgreSQL unique violation
+        throw new HttpException(
+          {
+            message: 'Database conflict',
+            errors: ['A business with these details already exists'],
+          },
+          HttpStatus.CONFLICT,
+        );
+      }
+
+      console.error('Business creation error:', error);
       throw new HttpException(
-        'Failed to create business',
+        {
+          message: 'Failed to create business',
+          errors: [error.message],
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
-  async findAll(page?: string | number, limit?: string | number) {
+  async findAll(page: number, limit: number) {
     try {
-      // Convert page and limit to numbers and set defaults
-      const currentPage = page ? parseInt(String(page), 10) : 1;
-      const itemsPerPage = limit ? parseInt(String(limit), 10) : 10;
-
-      // Validate the numbers
-      if (isNaN(currentPage) || isNaN(itemsPerPage)) {
-        throw new HttpException(
-          'Invalid pagination parameters',
-          HttpStatus.BAD_REQUEST,
-        );
-      }
-
       const [businesses, total] = await this.businessRepository.findAndCount({
-        skip: (currentPage - 1) * itemsPerPage,
-        take: itemsPerPage,
+        skip: (page - 1) * limit,
+        take: limit,
         order: { dateCreated: 'DESC' },
       });
+
+      if (!businesses.length && page > 1) {
+        throw new HttpException(
+          {
+            message: 'Page not found',
+            errors: ['The requested page exceeds available results'],
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
 
       return {
         data: businesses,
         meta: {
           total,
-          page: currentPage,
-          limit: itemsPerPage,
-          totalPages: Math.ceil(total / itemsPerPage),
+          page,
+          limit,
+          totalPages: Math.ceil(total / limit),
         },
       };
     } catch (error) {
-      console.log({ error });
       if (error instanceof HttpException) {
         throw error;
       }
+
       throw new HttpException(
-        'Failed to fetch businesses',
+        {
+          message: 'Failed to fetch businesses',
+          errors: [error.message],
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -78,7 +111,13 @@ export class BusinessService {
       });
 
       if (!business) {
-        throw new HttpException('Business not found', HttpStatus.NOT_FOUND);
+        throw new HttpException(
+          {
+            message: 'Business not found',
+            errors: ['No business exists with this ID'],
+          },
+          HttpStatus.NOT_FOUND,
+        );
       }
 
       return business;
@@ -86,8 +125,12 @@ export class BusinessService {
       if (error instanceof HttpException) {
         throw error;
       }
+
       throw new HttpException(
-        'Failed to fetch business',
+        {
+          message: 'Failed to fetch business',
+          errors: [error.message],
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -95,13 +138,18 @@ export class BusinessService {
 
   async findByOwnerId(ownerId: string): Promise<Business[]> {
     try {
-      return await this.businessRepository.find({
+      const businesses = await this.businessRepository.find({
         where: { owner_id: ownerId },
         order: { dateCreated: 'DESC' },
       });
+
+      return businesses;
     } catch (error) {
       throw new HttpException(
-        'Failed to fetch owner businesses',
+        {
+          message: 'Failed to fetch owner businesses',
+          errors: [error.message],
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -114,8 +162,21 @@ export class BusinessService {
     try {
       const business = await this.findOne(id);
 
-      if (!business) {
-        throw new HttpException('Business not found', HttpStatus.NOT_FOUND);
+      // Check if updating to a name that already exists (excluding current business)
+      if (updateBusinessDto.name) {
+        const existingBusiness = await this.businessRepository.findOne({
+          where: [{ name: updateBusinessDto.name, id: Not(id) }],
+        });
+
+        if (existingBusiness) {
+          throw new HttpException(
+            {
+              message: 'Business name already exists',
+              errors: ['Another business is already using this name'],
+            },
+            HttpStatus.CONFLICT,
+          );
+        }
       }
 
       Object.assign(business, updateBusinessDto);
@@ -124,8 +185,12 @@ export class BusinessService {
       if (error instanceof HttpException) {
         throw error;
       }
+
       throw new HttpException(
-        'Failed to update business',
+        {
+          message: 'Failed to update business',
+          errors: [error.message],
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -133,17 +198,19 @@ export class BusinessService {
 
   async remove(id: string): Promise<boolean> {
     try {
-      const result = await this.businessRepository.delete(id);
-      if (result.affected === 0) {
-        throw new HttpException('Business not found', HttpStatus.NOT_FOUND);
-      }
+      const business = await this.findOne(id);
+      await this.businessRepository.remove(business);
       return true;
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
       }
+
       throw new HttpException(
-        'Failed to delete business',
+        {
+          message: 'Failed to delete business',
+          errors: [error.message],
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -153,33 +220,29 @@ export class BusinessService {
     try {
       const business = await this.findOne(id);
 
-      // Call third-party KYB service
-      const verificationResponse = await this.httpService.axiosRef.post(
-        `${this.configService.get('KYB_API_URL')}/verify`,
-        {
-          businessId: business.id,
-          businessName: business.name,
-          businessType: business.business_type,
-          registrationNumber: business.id_number,
-          country: business.id_country,
-          // Add other required fields for KYB
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${this.configService.get('KYB_API_KEY')}`,
+      if (business.kyb_status === 'VERIFIED') {
+        throw new HttpException(
+          {
+            message: 'Business already verified',
+            errors: ['This business has already been verified'],
           },
-        },
-      );
+          HttpStatus.BAD_REQUEST,
+        );
+      }
 
-      // Update business with verification response
-      business.kyb_status = 'pending';
-      business.kyb_response = verificationResponse.data;
-      await this.businessRepository.save(business);
-
-      return verificationResponse.data;
+      // Implement your KYB verification logic here
+      business.kyb_status = 'PENDING';
+      return await this.businessRepository.save(business);
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
       throw new HttpException(
-        'Failed to initiate KYB verification',
+        {
+          message: 'Failed to initiate verification',
+          errors: [error.message],
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -189,15 +252,20 @@ export class BusinessService {
     try {
       const business = await this.findOne(id);
       return {
+        businessId: business.id,
         status: business.kyb_status,
-        response: business.kyb_response,
+        updatedAt: business.dateUpdated,
       };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
       }
+
       throw new HttpException(
-        'Failed to fetch KYB status',
+        {
+          message: 'Failed to fetch verification status',
+          errors: [error.message],
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -207,17 +275,23 @@ export class BusinessService {
     try {
       const business = await this.findOne(id);
 
-      // Handle document upload logic here
-      // You might want to use a file upload service or store in your database
+      // Implement document upload logic here
+      // You might want to use your CloudinaryService here
 
-      business.id_upload = documentData.documentUrl; // Assuming documentUrl is provided
-      return await this.businessRepository.save(business);
+      return {
+        message: 'Document uploaded successfully',
+        businessId: business.id,
+      };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
       }
+
       throw new HttpException(
-        'Failed to upload document',
+        {
+          message: 'Failed to upload document',
+          errors: [error.message],
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -226,35 +300,23 @@ export class BusinessService {
   async getDocuments(id: string) {
     try {
       const business = await this.findOne(id);
+
+      // Implement document retrieval logic here
       return {
-        id_upload: business.id_upload,
-        // Add other document fields as needed
+        businessId: business.id,
+        documents: [], // Return actual documents
       };
     } catch (error) {
       if (error instanceof HttpException) {
         throw error;
       }
+
       throw new HttpException(
-        'Failed to fetch documents',
+        {
+          message: 'Failed to fetch documents',
+          errors: [error.message],
+        },
         HttpStatus.INTERNAL_SERVER_ERROR,
-      );
-    }
-  }
-
-  // Helper method for validating business data
-  private async validateBusinessData(
-    data: CreateBusinessDto | UpdateBusinessDto,
-  ) {
-    // Add custom validation logic here
-    // For example, checking if the business name is unique
-    const existingBusiness = await this.businessRepository.findOne({
-      where: { name: data.name },
-    });
-
-    if (existingBusiness) {
-      throw new HttpException(
-        'Business name already exists',
-        HttpStatus.BAD_REQUEST,
       );
     }
   }
