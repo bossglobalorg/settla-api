@@ -15,6 +15,7 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
   UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { BusinessService } from './services/business/business.service';
 import { JwtAuthGuard } from '../user/guards/jwt-auth/jwt-auth.guard';
@@ -22,6 +23,8 @@ import { CreateBusinessDto } from './dto/create-business.dto';
 import { UpdateBusinessDto } from './dto/update-business.dto';
 import { Business } from './entities/business.entity';
 import { CloudinaryService } from '../global/services/cloudinary/cloudinary.service';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { BusinessDataTransformer } from './utils/business.transformer';
 
 @Controller('businesses')
 @UseGuards(JwtAuthGuard)
@@ -32,23 +35,35 @@ export class BusinessController {
   ) {}
 
   @Post()
+  @UseInterceptors(FileInterceptor('id_document'))
   async createBusiness(
     @Req() req: Request & { user: { id: string } },
-    @Body()
-    createBusinessDto: Omit<CreateBusinessDto, 'owner_id' | 'id_upload'>,
+    @Body() businessData: any,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<Business> {
     try {
+      if (!file) {
+        throw new HttpException(
+          'Business ID document is required',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       const uploadResult = await this.cloudinaryService.uploadDocument(file);
 
-      const businessData: CreateBusinessDto = {
-        ...createBusinessDto,
-        owner_id: req.user.id,
-        id_upload: uploadResult.secure_url,
-      };
+      const transformedData = BusinessDataTransformer.transform(
+        businessData,
+        req.user.id,
+        uploadResult.secure_url,
+      );
 
-      return await this.businessService.create(businessData);
+      return await this.businessService.create(transformedData);
     } catch (error) {
+      if (error instanceof HttpException) {
+        throw error;
+      }
+
+      console.error('Business creation error:', error);
       throw new HttpException(
         'Failed to create business',
         HttpStatus.INTERNAL_SERVER_ERROR,

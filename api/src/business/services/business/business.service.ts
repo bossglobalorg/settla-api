@@ -22,6 +22,7 @@ export class BusinessService {
       const business = this.businessRepository.create(createBusinessDto);
       return await this.businessRepository.save(business);
     } catch (error) {
+      console.log({ error });
       throw new HttpException(
         'Failed to create business',
         HttpStatus.INTERNAL_SERVER_ERROR,
