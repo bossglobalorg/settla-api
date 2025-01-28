@@ -15,7 +15,7 @@ export const getConfig = (): AppConfig => {
     auth: {
       resetExpiryTime: 300,
       verifyExpiryTime: 300,
-      otpSecret: "test"
+      otpSecret: 'test',
     },
     cache: {
       host: process.env.REDIS_HOST as string,
@@ -33,6 +33,11 @@ export const getConfig = (): AppConfig => {
         },
       },
     },
+    cloudinary: {
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME as string,
+      apiKey: process.env.CLOUDINARY_API_KEY as string,
+      apiSecret: process.env.CLOUDINARY_API_SECRET as string,
+    },
   };
 };
 
@@ -45,6 +50,7 @@ export interface AppConfig {
   cache: CacheConfig;
   mail: MailConfig;
   auth: AuthConfig;
+  cloudinary: CloudinaryConfig; // Add this line
 }
 
 export enum AppEnv {
@@ -83,5 +89,11 @@ export interface MailConfig {
 export interface AuthConfig {
   resetExpiryTime: number;
   verifyExpiryTime: number;
-  otpSecret: string
+  otpSecret: string;
+}
+
+export interface CloudinaryConfig {
+  cloudName: string;
+  apiKey: string;
+  apiSecret: string;
 }

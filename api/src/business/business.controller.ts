@@ -12,31 +12,39 @@ import {
   HttpStatus,
   HttpException,
   Req,
+  DefaultValuePipe,
+  ParseIntPipe,
+  UploadedFile,
 } from '@nestjs/common';
 import { BusinessService } from './services/business/business.service';
 import { JwtAuthGuard } from '../user/guards/jwt-auth/jwt-auth.guard';
 import { CreateBusinessDto } from './dto/create-business.dto';
 import { UpdateBusinessDto } from './dto/update-business.dto';
 import { Business } from './entities/business.entity';
+import { CloudinaryService } from '../global/services/cloudinary/cloudinary.service';
 
 @Controller('businesses')
 @UseGuards(JwtAuthGuard)
 export class BusinessController {
-  constructor(private readonly businessService: BusinessService) {}
+  constructor(
+    private readonly businessService: BusinessService,
+    private readonly cloudinaryService: CloudinaryService,
+  ) {}
 
-  // business.controller.ts
   @Post()
   async createBusiness(
     @Req() req: Request & { user: { id: string } },
     @Body()
     createBusinessDto: Omit<CreateBusinessDto, 'owner_id' | 'id_upload'>,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<Business> {
     try {
-      // Create the complete business data
+      const uploadResult = await this.cloudinaryService.uploadDocument(file);
+
       const businessData: CreateBusinessDto = {
         ...createBusinessDto,
         owner_id: req.user.id,
-        id_upload: 'placeholder',
+        id_upload: uploadResult.secure_url,
       };
 
       return await this.businessService.create(businessData);
@@ -50,12 +58,11 @@ export class BusinessController {
 
   @Get()
   async getAllBusinesses(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10,
+    @Query('page', new DefaultValuePipe(1), ParseIntPipe) page: number,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
   ) {
     try {
-      const businesses = await this.businessService.findAll(page, limit);
-      return businesses;
+      return await this.businessService.findAll(page, limit);
     } catch (error) {
       throw new HttpException(
         'Failed to fetch businesses',

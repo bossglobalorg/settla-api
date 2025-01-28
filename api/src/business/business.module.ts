@@ -6,6 +6,7 @@ import { Business } from './entities/business.entity';
 import { BusinessController } from './business.controller';
 import { BusinessService } from './services/business/business.service';
 import { KybService } from './services/kyb/kyb.service';
+import { CloudinaryService } from 'src/global/services/cloudinary/cloudinary.service';
 
 @Module({
   imports: [
@@ -16,11 +17,7 @@ import { KybService } from './services/kyb/kyb.service';
     }),
   ],
   controllers: [BusinessController],
-  providers: [
-    BusinessService,
-    KybService,
-    ConfigService, // Add ConfigService to providers
-  ],
+  providers: [BusinessService, KybService, ConfigService, CloudinaryService],
   exports: [BusinessService],
 })
 export class BusinessModule {}

@@ -29,11 +29,23 @@ export class BusinessService {
     }
   }
 
-  async findAll(page: number = 1, limit: number = 10) {
+  async findAll(page?: string | number, limit?: string | number) {
     try {
+      // Convert page and limit to numbers and set defaults
+      const currentPage = page ? parseInt(String(page), 10) : 1;
+      const itemsPerPage = limit ? parseInt(String(limit), 10) : 10;
+
+      // Validate the numbers
+      if (isNaN(currentPage) || isNaN(itemsPerPage)) {
+        throw new HttpException(
+          'Invalid pagination parameters',
+          HttpStatus.BAD_REQUEST,
+        );
+      }
+
       const [businesses, total] = await this.businessRepository.findAndCount({
-        skip: (page - 1) * limit,
-        take: limit,
+        skip: (currentPage - 1) * itemsPerPage,
+        take: itemsPerPage,
         order: { dateCreated: 'DESC' },
       });
 
@@ -41,12 +53,16 @@ export class BusinessService {
         data: businesses,
         meta: {
           total,
-          page,
-          limit,
-          totalPages: Math.ceil(total / limit),
+          page: currentPage,
+          limit: itemsPerPage,
+          totalPages: Math.ceil(total / itemsPerPage),
         },
       };
     } catch (error) {
+      console.log({ error });
+      if (error instanceof HttpException) {
+        throw error;
+      }
       throw new HttpException(
         'Failed to fetch businesses',
         HttpStatus.INTERNAL_SERVER_ERROR,
