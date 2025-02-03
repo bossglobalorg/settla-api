@@ -26,7 +26,10 @@ import { JwtAuthGuard } from '../user/guards/jwt-auth/jwt-auth.guard';
 import { UpdateBusinessDto } from './dto/update-business.dto';
 import { Business } from './entities/business.entity';
 import { CloudinaryService } from '../global/services/cloudinary/cloudinary.service';
-import { FileInterceptor } from '@nestjs/platform-express';
+import {
+  FileFieldsInterceptor,
+  FileInterceptor,
+} from '@nestjs/platform-express';
 import { AllExceptionsFilter } from 'src/global/filters/http-exception.filter';
 import { CreateBusinessDto } from './dto/create-business.dto';
 import { BusinessBasicInfoDto } from './dto/basic-business.dto';
@@ -180,20 +183,22 @@ export class BusinessController {
 
   @Post(':businessId/documents')
   @UseInterceptors(
-    FileInterceptor('business_registration'),
-    FileInterceptor('proof_of_address'),
+    FileFieldsInterceptor([
+      { name: 'business_registration', maxCount: 1 },
+      { name: 'proof_of_address', maxCount: 1 },
+    ]),
   )
   @UsePipes(ValidationPipe)
   async uploadBusinessDocuments(
     @Param('businessId') businessId: string,
     @UploadedFiles()
     files: {
-      business_registration?: Express.Multer.File;
-      proof_of_address?: Express.Multer.File;
+      business_registration?: Express.Multer.File[];
+      proof_of_address?: Express.Multer.File[];
     },
   ): Promise<Business> {
     try {
-      if (!files.business_registration) {
+      if (!files.business_registration || !files.business_registration[0]) {
         throw new HttpException(
           {
             message: 'Validation failed',
@@ -211,14 +216,14 @@ export class BusinessController {
 
       // Upload business registration document
       const registrationUpload = await this.cloudinaryService.uploadDocument(
-        files.business_registration,
+        files.business_registration[0],
       );
       documents.business_registration_doc = registrationUpload.secure_url;
 
       // Upload proof of address if provided
-      if (files.proof_of_address) {
+      if (files.proof_of_address && files.proof_of_address[0]) {
         const addressUpload = await this.cloudinaryService.uploadDocument(
-          files.proof_of_address,
+          files.proof_of_address[0],
         );
         documents.proof_of_address_doc = addressUpload.secure_url;
       }
