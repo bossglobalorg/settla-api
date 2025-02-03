@@ -5,19 +5,19 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { Business } from './entities/business.entity';
 import { BusinessController } from './business.controller';
 import { BusinessService } from './services/business/business.service';
-import { KybService } from './services/kyb/kyb.service';
 import { CloudinaryService } from 'src/global/services/cloudinary/cloudinary.service';
+import { GraphService } from 'src/global/services/graph/graph.service';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Business]),
     HttpModule,
     ConfigModule.forRoot({
-      isGlobal: true, // This makes ConfigModule available throughout the app
+      isGlobal: true, 
     }),
   ],
   controllers: [BusinessController],
-  providers: [BusinessService, KybService, ConfigService, CloudinaryService],
+  providers: [BusinessService, ConfigService, CloudinaryService, GraphService],
   exports: [BusinessService],
 })
 export class BusinessModule {}

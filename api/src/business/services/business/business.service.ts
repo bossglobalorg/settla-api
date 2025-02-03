@@ -11,12 +11,14 @@ import { Business } from '../../entities/business.entity';
 import { CreateBusinessDto } from '../../dto/create-business.dto';
 import { UpdateBusinessDto } from '../../dto/update-business.dto';
 import { BusinessIdentificationDto } from 'src/business/dto/business-identification.dto';
+import { GraphService } from 'src/global/services/graph/graph.service';
 
 @Injectable()
 export class BusinessService {
   constructor(
     @InjectRepository(Business)
     private readonly businessRepository: Repository<Business>,
+    private readonly graphService: GraphService,
   ) {}
 
   async createBasicInfo(
@@ -71,6 +73,12 @@ export class BusinessService {
       business.proof_of_address_doc = documents.proof_of_address_doc;
     }
     business.registration_status = documents.registration_status;
+
+    const updatedBusiness = await this.businessRepository.save(business);
+
+    if (business.registration_status === 'documents_completed') {
+      await this.graphService.completeKyb(updatedBusiness);
+    }
 
     return await this.businessRepository.save(business);
   }
