@@ -9,6 +9,7 @@ import { AsyncStorageMiddleware } from './global/middleware/async-storage/async-
 import { GlobalModule } from './global/global.module';
 import { HealthModule } from './health/health.module';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { BusinessModule } from './business/business.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     DbModule,
     AppCacheModule,
     UserModule,
+    BusinessModule,
     ConfigModule,
     LoggerModule,
     HealthModule,

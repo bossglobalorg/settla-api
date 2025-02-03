@@ -25,6 +25,10 @@ export class AuthService {
       return this.failLogin();
     }
 
+    if (!user.emailVerified) {
+      this.failLogin('Please verify your email before logging in');
+    }
+
     if (await this.userService.checkUserPassword(user, password)) {
       const token = this.userService.getUserToken(user);
       user.token = token;
@@ -34,6 +38,10 @@ export class AuthService {
     }
 
     this.failLogin('Incorrect password');
+  }
+
+  async verifyOtp(email: string, otp: string): Promise<string> {
+    return this.userService.verifyOtpAndGenerateToken(email, otp);
   }
 
   private failLogin(message = 'Login failed') {

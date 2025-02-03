@@ -34,9 +34,15 @@ export class MailService {
   }
 
   public async send(options: MailOptions): Promise<string> {
-    const result = await this.transport.sendMail(options);
-
-    return result.response;
+    try {
+      console.log('Sending email with options:', options); // Debug log
+      const result = await this.transport.sendMail(options);
+      console.log('Email sent successfully:', result); // Debug log
+      return result.response;
+    } catch (error) {
+      console.error('Failed to send email:', error); // Error log
+      throw error;
+    }
   }
 
   public from(): string {

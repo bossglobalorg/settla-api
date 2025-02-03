@@ -8,6 +8,10 @@ export const mockUserEntity: UserEntity = {
   token: 'token',
   passwordHash: 'password',
   businessName: 'businessName',
+  emailVerified: false,
   dateCreated: new Date(),
   dateUpdated: new Date(),
+  kyc_status: 'verified',
+  kyc_response: null,
+  businesses: [],
 };

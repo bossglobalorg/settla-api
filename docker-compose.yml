@@ -10,9 +10,9 @@ services:
       POSTGRES_PASSWORD: secret
       POSTGRES_DB: api
     volumes:
-      - ./.data/db:/var/lib/postgresql/data
+      - ./.data/db://var/lib/postsgresql/datav2
     ports:
-      - "5432:5432"
+      - "5433:5432"
 
   ### Redis ################################################
   redis:

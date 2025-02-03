@@ -12,6 +12,11 @@ export const getConfig = (): AppConfig => {
       dbName: process.env.DB_NAME as string,
       isSync: process.env.DB_SYNC === 'true',
     },
+    auth: {
+      resetExpiryTime: 300,
+      verifyExpiryTime: 300,
+      otpSecret: 'test',
+    },
     cache: {
       host: process.env.REDIS_HOST as string,
       port: parseInt(process.env.REDIS_PORT as string, 10) || 6379,
@@ -28,6 +33,11 @@ export const getConfig = (): AppConfig => {
         },
       },
     },
+    cloudinary: {
+      cloudName: process.env.CLOUDINARY_CLOUD_NAME as string,
+      apiKey: process.env.CLOUDINARY_API_KEY as string,
+      apiSecret: process.env.CLOUDINARY_API_SECRET as string,
+    },
   };
 };
 
@@ -39,6 +49,8 @@ export interface AppConfig {
   database: DbConfig;
   cache: CacheConfig;
   mail: MailConfig;
+  auth: AuthConfig;
+  cloudinary: CloudinaryConfig; // Add this line
 }
 
 export enum AppEnv {
@@ -72,4 +84,16 @@ export interface MailConfig {
       pass: string;
     };
   };
+}
+
+export interface AuthConfig {
+  resetExpiryTime: number;
+  verifyExpiryTime: number;
+  otpSecret: string;
+}
+
+export interface CloudinaryConfig {
+  cloudName: string;
+  apiKey: string;
+  apiSecret: string;
 }
