@@ -4,12 +4,17 @@ import { ConfigService } from '@nestjs/config';
 import { HttpService } from '@nestjs/axios';
 import { Business } from 'src/business/entities/business.entity';
 import { GraphConfig } from 'src/services/app-config/configuration';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 
 type BusinessType =
   | 'soleProprietor'
   | 'singleMemberLLC'
   | 'limitedLiabilityCompany';
-type GraphBusinessType = 'soleProprietor' | 'singleMemberLLC' | 'limitedLiabilityCompany';
+type GraphBusinessType =
+  | 'soleProprietor'
+  | 'singleMemberLLC'
+  | 'limitedLiabilityCompany';
 
 @Injectable()
 export class GraphService {
@@ -18,6 +23,8 @@ export class GraphService {
   constructor(
     private readonly httpService: HttpService,
     private readonly configService: ConfigService,
+    @InjectRepository(Business)
+    private readonly businessRepository: Repository<Business>,
   ) {}
 
   async completeKyb(business: Business): Promise<void> {
@@ -51,8 +58,6 @@ export class GraphService {
       proof_of_address: business.proof_of_address_doc || null,
     };
 
-    console.log({ formattedData });
-
     try {
       const response = await this.httpService.axiosRef.post(
         `${baseUrl}/business`,
@@ -65,6 +70,11 @@ export class GraphService {
           },
         },
       );
+
+      business.kyb_status = response.data.data.kyb_status;
+      business.kyb_response = response.data.status;
+
+      await this.businessRepository.save(business);
 
       this.logger.log(
         `Successfully sent KYB data to Graph for business ${business.id}. Status: ${response.status}`,
