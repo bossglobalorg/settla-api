@@ -92,11 +92,7 @@ export class UserEntity extends BaseEntity {
   @Column({ nullable: true })
   token: string;
 
-  @Column({
-    type: 'enum',
-    enum: ['pending', 'completed', 'failed'],
-    nullable: true,
-  })
+  @Column({ nullable: true })
   kyc_status: string;
 
   @Column({ type: 'jsonb', nullable: true })

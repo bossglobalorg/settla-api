@@ -16,4 +16,12 @@ export class IdentificationDto {
   @IsString()
   @IsNotEmpty()
   bank_id_number: string;
+
+  @IsString()
+  @IsEnum(['NG', 'US'])
+  id_country: string;
+
+  @IsString()
+  @IsEnum(['basic', 'preliminary'])
+  kyc_level: string;
 }

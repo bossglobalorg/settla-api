@@ -15,7 +15,7 @@ export class BackgroundInfoDto {
 
   @IsString()
   @IsEnum(['salary', 'business_income', 'investments', 'other'])
-  source_of_fund: string;
+  source_of_funds: string;
 
   @IsString()
   @IsEnum(['0-1000', '1001-5000', '5001-10000', '10001+'])

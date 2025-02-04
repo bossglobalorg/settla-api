@@ -1,4 +1,3 @@
-// src/business/business.controller.ts
 import {
   Controller,
   Get,
@@ -14,7 +13,6 @@ import {
   Req,
   DefaultValuePipe,
   ParseIntPipe,
-  UploadedFile,
   UseInterceptors,
   ValidationPipe,
   UseFilters,
@@ -26,12 +24,8 @@ import { JwtAuthGuard } from '../user/guards/jwt-auth/jwt-auth.guard';
 import { UpdateBusinessDto } from './dto/update-business.dto';
 import { Business } from './entities/business.entity';
 import { CloudinaryService } from '../global/services/cloudinary/cloudinary.service';
-import {
-  FileFieldsInterceptor,
-  FileInterceptor,
-} from '@nestjs/platform-express';
+import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AllExceptionsFilter } from 'src/global/filters/http-exception.filter';
-import { CreateBusinessDto } from './dto/create-business.dto';
 import { BusinessBasicInfoDto } from './dto/basic-business.dto';
 import { BusinessIdentificationDto } from './dto/business-identification.dto';
 

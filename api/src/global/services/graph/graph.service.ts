@@ -132,7 +132,7 @@ export class GraphService {
 
     try {
       const response = await this.httpService.axiosRef.post(
-        `${baseUrl}/kyc`,
+        `${baseUrl}/person`,
         formattedData,
         {
           headers: {
