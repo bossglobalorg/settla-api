@@ -6,6 +6,11 @@ import { Business } from 'src/business/entities/business.entity';
 import { GraphConfig } from 'src/services/app-config/configuration';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { PartnerReferenceService } from '../partner-reference/partner-reference.service';
+import {
+  PartnerEntityType,
+  PartnerName,
+} from 'src/global/enums/partner-reference.enum';
 
 type BusinessType =
   | 'soleProprietor'
@@ -25,6 +30,7 @@ export class GraphService {
     private readonly configService: ConfigService,
     @InjectRepository(Business)
     private readonly businessRepository: Repository<Business>,
+    private readonly partnerReferenceService: PartnerReferenceService,
   ) {}
 
   async completeKyb(business: Business): Promise<void> {
@@ -75,6 +81,15 @@ export class GraphService {
       business.kyb_response = response.data.status;
 
       await this.businessRepository.save(business);
+
+      await this.partnerReferenceService.createOrUpdate({
+        entityId: business.id,
+        entityType: PartnerEntityType.BUSINESS,
+        partnerName: PartnerName.GRAPH,
+        partnerEntityId: response.data.data.id,
+        metadata: response.data,
+        verificationStatus: response.data.status,
+      });
 
       this.logger.log(
         `Successfully sent KYB data to Graph for business ${business.id}. Status: ${response.status}`,
