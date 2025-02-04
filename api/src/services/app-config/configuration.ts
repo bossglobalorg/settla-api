@@ -38,6 +38,10 @@ export const getConfig = (): AppConfig => {
       apiKey: process.env.CLOUDINARY_API_KEY as string,
       apiSecret: process.env.CLOUDINARY_API_SECRET as string,
     },
+    graph: {
+      apiKey: process.env.GRAPH_API_KEY as string,
+      baseUrl: process.env.GRAPH_BASE_URL as string,
+    },
   };
 };
 
@@ -51,6 +55,7 @@ export interface AppConfig {
   mail: MailConfig;
   auth: AuthConfig;
   cloudinary: CloudinaryConfig; // Add this line
+  graph: GraphConfig;
 }
 
 export enum AppEnv {
@@ -96,4 +101,9 @@ export interface CloudinaryConfig {
   cloudName: string;
   apiKey: string;
   apiSecret: string;
+}
+
+export interface GraphConfig {
+  apiKey: string;
+  baseUrl: string;
 }

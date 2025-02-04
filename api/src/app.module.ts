@@ -10,6 +10,7 @@ import { GlobalModule } from './global/global.module';
 import { HealthModule } from './health/health.module';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { BusinessModule } from './business/business.module';
+import { GraphModule } from './global/services/graph/graph.module';
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { BusinessModule } from './business/business.module';
     ConfigModule,
     LoggerModule,
     HealthModule,
+    GraphModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60,

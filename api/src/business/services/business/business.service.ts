@@ -1,65 +1,86 @@
 // src/business/services/business/business.service.ts
-import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import {
+  Injectable,
+  HttpException,
+  HttpStatus,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Not, Repository } from 'typeorm';
 import { Business } from '../../entities/business.entity';
 import { CreateBusinessDto } from '../../dto/create-business.dto';
 import { UpdateBusinessDto } from '../../dto/update-business.dto';
+import { BusinessIdentificationDto } from 'src/business/dto/business-identification.dto';
+import { GraphService } from 'src/global/services/graph/graph.service';
 
 @Injectable()
 export class BusinessService {
   constructor(
     @InjectRepository(Business)
     private readonly businessRepository: Repository<Business>,
+    private readonly graphService: GraphService,
   ) {}
 
-  async create(createBusinessDto: CreateBusinessDto): Promise<Business> {
-    try {
-      const existingBusiness = await this.businessRepository.findOne({
-        where: [
-          { name: createBusinessDto.name },
-          { id_number: createBusinessDto.id_number },
-        ],
-      });
+  async createBasicInfo(
+    businessData: Partial<CreateBusinessDto>,
+  ): Promise<Business> {
+    const business = this.businessRepository.create(businessData);
+    return await this.businessRepository.save(business);
+  }
 
-      if (existingBusiness) {
-        throw new HttpException(
-          {
-            message: 'Business already exists',
-            errors: ['A business with this name or ID number already exists'],
-          },
-          HttpStatus.CONFLICT,
-        );
-      }
+  async addIdentification(
+    businessId: string,
+    identificationData: BusinessIdentificationDto,
+  ): Promise<Business> {
+    const business = await this.businessRepository.findOne({
+      where: { id: businessId },
+    });
 
-      const business = this.businessRepository.create(createBusinessDto);
-      return await this.businessRepository.save(business);
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error;
-      }
-
-      // Handle database-specific errors
-      if (error.code === '23505') {
-        // PostgreSQL unique violation
-        throw new HttpException(
-          {
-            message: 'Database conflict',
-            errors: ['A business with these details already exists'],
-          },
-          HttpStatus.CONFLICT,
-        );
-      }
-
-      console.error('Business creation error:', error);
-      throw new HttpException(
-        {
-          message: 'Failed to create business',
-          errors: [error.message],
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      );
+    if (!business) {
+      throw new NotFoundException('Business not found');
     }
+
+    // Update individual identification fields
+    business.id_type = identificationData.id_type;
+    business.id_number = identificationData.id_number;
+    business.id_country = identificationData.id_country;
+    business.id_level = identificationData.id_level;
+    business.dof = identificationData.dof;
+    business.registration_status = 'identification_completed';
+
+    return await this.businessRepository.save(business);
+  }
+
+  async addDocuments(
+    businessId: string,
+    documents: {
+      business_registration_doc: string;
+      proof_of_address_doc?: string;
+      registration_status: string;
+    },
+  ): Promise<Business> {
+    const business = await this.businessRepository.findOne({
+      where: { id: businessId },
+    });
+
+    if (!business) {
+      throw new NotFoundException('Business not found');
+    }
+
+    // Update document fields
+    business.business_registration_doc = documents.business_registration_doc;
+    if (documents.proof_of_address_doc) {
+      business.proof_of_address_doc = documents.proof_of_address_doc;
+    }
+    business.registration_status = documents.registration_status;
+
+    const updatedBusiness = await this.businessRepository.save(business);
+
+    if (business.registration_status === 'documents_completed') {
+      await this.graphService.completeKyb(updatedBusiness);
+    }
+
+    return await this.businessRepository.save(business);
   }
 
   async findAll(page: number, limit: number) {
@@ -142,7 +163,6 @@ export class BusinessService {
         where: { owner_id: ownerId },
         order: { dateCreated: 'DESC' },
       });
-
       return businesses;
     } catch (error) {
       throw new HttpException(
@@ -163,9 +183,9 @@ export class BusinessService {
       const business = await this.findOne(id);
 
       // Check if updating to a name that already exists (excluding current business)
-      if (updateBusinessDto.name) {
+      if (updateBusinessDto.basic_info?.name) {
         const existingBusiness = await this.businessRepository.findOne({
-          where: [{ name: updateBusinessDto.name, id: Not(id) }],
+          where: [{ name: updateBusinessDto.basic_info?.name, id: Not(id) }],
         });
 
         if (existingBusiness) {
