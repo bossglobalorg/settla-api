@@ -88,7 +88,7 @@ export class GraphService {
         partnerName: PartnerName.GRAPH,
         partnerEntityId: response.data.data.id,
         metadata: response.data,
-        verificationStatus: response.data.status,
+        verificationStatus: response.data.data.kyb_status,
       });
 
       this.logger.log(
