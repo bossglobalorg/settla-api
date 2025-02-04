@@ -11,6 +11,7 @@ import {
   PartnerEntityType,
   PartnerName,
 } from 'src/global/enums/partner-reference.enum';
+import { UserEntity } from 'src/user/entities/user.entity';
 
 type BusinessType =
   | 'soleProprietor'
@@ -97,6 +98,53 @@ export class GraphService {
     } catch (error) {
       this.logger.error(
         `Failed to send KYB data to Graph for business ${business.id}`,
+        error.response?.data || error.message,
+      );
+      throw error;
+    }
+  }
+
+  // src/global/services/graph/graph.service.ts
+  async verifyUserKyc(user: UserEntity): Promise<any> {
+    const { baseUrl, apiKey } = this.configService.get<GraphConfig>(
+      'graph',
+    ) as GraphConfig;
+
+    const formattedData = {
+      name_first: user.firstName,
+      name_last: user.lastName,
+      name_other: user.otherName || '',
+      phone: user.phone,
+      email: user.email,
+      dob: user.dob,
+      id_level: user.id_level,
+      id_type: user.id_type,
+      id_number: user.id_number,
+      id_country: user.id_country,
+      bank_id_number: user.bank_id_number,
+      kyc_level: user.kyc_level || 'basic',
+      address: user.address || {},
+      background_information: user.background_information || {},
+      documents: user.documents || [],
+    };
+
+    try {
+      const response = await this.httpService.axiosRef.post(
+        `${baseUrl}/kyc`,
+        formattedData,
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+            'Content-Type': 'application/json',
+            'X-Source': 'settla',
+          },
+        },
+      );
+
+      return response.data;
+    } catch (error) {
+      this.logger.error(
+        `Failed to verify KYC with Graph for user ${user.id}`,
         error.response?.data || error.message,
       );
       throw error;
