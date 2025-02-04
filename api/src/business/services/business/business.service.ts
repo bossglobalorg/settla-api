@@ -163,7 +163,6 @@ export class BusinessService {
         where: { owner_id: ownerId },
         order: { dateCreated: 'DESC' },
       });
-
       return businesses;
     } catch (error) {
       throw new HttpException(

@@ -28,6 +28,11 @@ import { FileFieldsInterceptor } from '@nestjs/platform-express';
 import { AllExceptionsFilter } from 'src/global/filters/http-exception.filter';
 import { BusinessBasicInfoDto } from './dto/basic-business.dto';
 import { BusinessIdentificationDto } from './dto/business-identification.dto';
+import { PartnerReferenceService } from 'src/global/services/partner-reference/partner-reference.service';
+import {
+  PartnerEntityType,
+  PartnerName,
+} from 'src/global/enums/partner-reference.enum';
 
 @Controller('businesses')
 @UseGuards(JwtAuthGuard)
@@ -36,6 +41,7 @@ export class BusinessController {
   constructor(
     private readonly businessService: BusinessService,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly partnerService: PartnerReferenceService,
   ) {}
 
   @Post('basic-info')
@@ -48,7 +54,7 @@ export class BusinessController {
       const existingBusiness = await this.businessService.findByOwnerId(
         req.user.id,
       );
-      if (existingBusiness) {
+      if (existingBusiness.length) {
         throw new HttpException(
           {
             message: 'Business already exists for this user',
@@ -57,8 +63,25 @@ export class BusinessController {
           HttpStatus.CONFLICT,
         );
       }
+
+      const partnerReference = await this.partnerService.findReference(
+        req.user.id,
+        PartnerEntityType.USER,
+        PartnerName.GRAPH,
+      );
+
+      if (!partnerReference) {
+        throw new HttpException(
+          {
+            message: 'Partner reference not found',
+            errors: ['No partner reference found for the user'],
+          },
+          HttpStatus.NOT_FOUND,
+        );
+      }
+
       const businessData = {
-        owner_id: req.user.id,
+        owner_id: partnerReference.partner_entity_id,
         name: req.user.businessName,
         business_type: basicInfoData.business_type,
         industry: basicInfoData.industry,
