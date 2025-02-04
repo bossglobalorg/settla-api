@@ -41,13 +41,25 @@ export class BusinessController {
   @Post('basic-info')
   @UsePipes(ValidationPipe)
   async createBusinessBasicInfo(
-    @Req() req: Request & { user: { id: string } },
+    @Req() req: Request & { user: { id: string; businessName: string } },
     @Body() basicInfoData: BusinessBasicInfoDto,
   ): Promise<Business> {
     try {
+      const existingBusiness = await this.businessService.findByOwnerId(
+        req.user.id,
+      );
+      if (existingBusiness) {
+        throw new HttpException(
+          {
+            message: 'Business already exists for this user',
+            errors: ['A business has already been created for this user'],
+          },
+          HttpStatus.CONFLICT,
+        );
+      }
       const businessData = {
         owner_id: req.user.id,
-        name: basicInfoData.name,
+        name: req.user.businessName,
         business_type: basicInfoData.business_type,
         industry: basicInfoData.industry,
         contact_phone: basicInfoData.contact_phone,

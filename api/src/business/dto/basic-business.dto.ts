@@ -10,7 +10,7 @@ import {
 export class BusinessBasicInfoDto {
   @IsString()
   @IsNotEmpty({ message: 'Business name is required' })
-  name: string;
+  name?: string;
 
   @IsString()
   @IsEnum(['soleProprietor', 'singleMemberLLC', 'limitedLiabilityCompany'], {
