@@ -3,6 +3,7 @@ import {
   Controller,
   Param,
   Post,
+  Req,
   UploadedFile,
   UseGuards,
   UseInterceptors,
@@ -16,7 +17,7 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { DocumentDto } from './dto/kyc/document.dto';
 import { CloudinaryService } from 'src/global/services/cloudinary/cloudinary.service';
 
-@Controller('users/:userId/kyc')
+@Controller('users/kyc')
 @UseGuards(JwtAuthGuard)
 export class UserKycController {
   constructor(
@@ -26,32 +27,41 @@ export class UserKycController {
 
   @Post('personal-info')
   async submitPersonalInfo(
-    @Param('userId') userId: string,
+    @Req() req: Request & { user: { id: string } },
     @Body() personalInfo: PersonalInfoDto,
   ) {
-    return await this.userKycService.savePersonalInfo(userId, personalInfo);
+    return await this.userKycService.savePersonalInfo(
+      req.user.id,
+      personalInfo,
+    );
   }
 
   @Post('identification')
   async submitIdentification(
-    @Param('userId') userId: string,
+    @Req() req: Request & { user: { id: string } },
     @Body() identification: IdentificationDto,
   ) {
-    return await this.userKycService.saveIdentification(userId, identification);
+    return await this.userKycService.saveIdentification(
+      req.user.id,
+      identification,
+    );
   }
 
   @Post('background')
   async submitBackgroundInfo(
-    @Param('userId') userId: string,
+    @Req() req: Request & { user: { id: string } },
     @Body() backgroundInfo: BackgroundInfoDto,
   ) {
-    return await this.userKycService.saveBackgroundInfo(userId, backgroundInfo);
+    return await this.userKycService.saveBackgroundInfo(
+      req.user.id,
+      backgroundInfo,
+    );
   }
 
   @Post('documents')
   @UseInterceptors(FileInterceptor('document'))
   async submitDocument(
-    @Param('userId') userId: string,
+    @Req() req: Request & { user: { id: string } },
     @Body() documentInfo: Omit<DocumentDto, 'document_url'>,
     @UploadedFile() file: Express.Multer.File,
   ) {
@@ -60,6 +70,6 @@ export class UserKycController {
       ...documentInfo,
       document_url: uploadedUrl.secure_url,
     };
-    return await this.userKycService.addDocument(userId, document);
+    return await this.userKycService.addDocument(req.user.id, document);
   }
 }

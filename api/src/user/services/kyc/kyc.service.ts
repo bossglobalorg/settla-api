@@ -30,7 +30,7 @@ export class UserKycService {
   ): Promise<UserEntity> {
     const user = await this.findUser(userId);
     Object.assign(user, data);
-    user.kyc_status = 'personal_info';
+    user.kyc_step = 'personal_info';
     return await this.userRepository.save(user);
   }
 
@@ -40,7 +40,7 @@ export class UserKycService {
   ): Promise<UserEntity> {
     const user = await this.findUser(userId);
     Object.assign(user, data);
-    user.kyc_status = 'identification';
+    user.kyc_step = 'identification';
     return await this.userRepository.save(user);
   }
 
@@ -52,7 +52,7 @@ export class UserKycService {
     Object.assign(user, {
       background_information: data,
     });
-    user.kyc_status = 'background';
+    user.kyc_step = 'background';
     return await this.userRepository.save(user);
   }
 
@@ -67,7 +67,7 @@ export class UserKycService {
     }
 
     user.documents.push(document);
-    user.kyc_status = 'documents';
+    user.kyc_step = 'documents';
 
     const updatedUser = await this.userRepository.save(user);
 

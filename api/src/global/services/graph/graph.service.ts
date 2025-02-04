@@ -32,6 +32,8 @@ export class GraphService {
     @InjectRepository(Business)
     private readonly businessRepository: Repository<Business>,
     private readonly partnerReferenceService: PartnerReferenceService,
+    @InjectRepository(UserEntity)
+    private readonly userRepository: Repository<UserEntity>,
   ) {}
 
   async completeKyb(business: Business): Promise<void> {
@@ -79,7 +81,7 @@ export class GraphService {
       );
 
       business.kyb_status = response.data.data.kyb_status;
-      business.kyb_response = response.data.status;
+      business.kyb_response = response.data.data;
 
       await this.businessRepository.save(business);
 
@@ -140,6 +142,20 @@ export class GraphService {
           },
         },
       );
+
+      user.kyc_status = response.data.data.kyc_status;
+      user.kyc_response = response.data.data;
+
+      await this.userRepository.save(user);
+
+      await this.partnerReferenceService.createOrUpdate({
+        entityId: user.id,
+        entityType: PartnerEntityType.USER,
+        partnerName: PartnerName.GRAPH,
+        partnerEntityId: response.data.data.id,
+        metadata: response.data,
+        verificationStatus: response.data.data.kyc_status,
+      });
 
       return response.data;
     } catch (error) {
