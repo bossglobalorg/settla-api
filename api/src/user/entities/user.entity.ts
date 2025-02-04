@@ -78,7 +78,7 @@ export class UserEntity extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: ['basic', 'intermediate', 'advanced'],
+    enum: ['basic', 'preliminary'],
     nullable: true,
   })
   kyc_level: string;
