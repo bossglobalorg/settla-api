@@ -53,18 +53,20 @@ export class UserEntity extends BaseEntity {
     type: 'enum',
     enum: ['primary', 'secondary'],
     nullable: true,
+    name: 'id_level',
   })
-  id_level: string;
+  idLevel: string;
 
   @Column({
     type: 'enum',
     enum: ['passport', 'national_id', 'drivers_license'],
     nullable: true,
+    name: 'id_type',
   })
-  id_type: string;
+  idType: string;
 
-  @Column({ nullable: true })
-  id_number: string;
+  @Column({ nullable: true, name: 'id_number' })
+  idNumber: string;
 
   @Column({
     type: 'enum',
@@ -74,15 +76,16 @@ export class UserEntity extends BaseEntity {
   })
   idCountry: string;
 
-  @Column({ nullable: true })
-  bank_id_number: string;
+  @Column({ nullable: true, name: 'bank_id_number' })
+  bankIdNumber: string;
 
   @Column({
     type: 'enum',
     enum: ['basic', 'preliminary'],
     nullable: true,
+    name: 'kyc_level',
   })
-  kyc_level: string;
+  kycLevel: string;
 
   @Column({ type: 'jsonb', nullable: true })
   address: Record<string, any>;
