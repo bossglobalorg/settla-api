@@ -127,8 +127,10 @@ export class GraphService {
       kyc_level: user.kycLevel || 'basic',
       address: user.address || {},
       background_information: user.background_information || {},
-      documents: user.documents || [],
+      documents: [user.documents[0]],
     };
+
+    console.log({ formattedData });
 
     try {
       const response = await this.httpService.axiosRef.post(
