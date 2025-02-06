@@ -1,17 +1,21 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString, IsEnum } from 'class-validator';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  IsString,
+  IsEnum,
+} from 'class-validator';
 
 export enum Country {
-  US = "US",
-  NG = "NG"
+  US = 'US',
+  NG = 'NG',
 }
 
 export class CreateUserDto {
   @IsString()
-  @IsOptional()
   firstName: string;
 
   @IsString()
-  @IsOptional()
   lastName: string;
 
   @IsEmail()
