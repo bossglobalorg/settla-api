@@ -28,4 +28,5 @@ export const mockUserEntity: UserEntity = {
   businesses: [],
   proof_of_address: 'sss',
   kyc_step: '',
+  partner_references: [],
 };

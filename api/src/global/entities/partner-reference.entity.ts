@@ -4,11 +4,14 @@ import {
   Column,
   CreateDateColumn,
   UpdateDateColumn,
+  ManyToOne,
+  JoinColumn,
 } from 'typeorm';
 import {
   PartnerEntityType,
   PartnerName,
 } from '../enums/partner-reference.enum';
+import { UserEntity } from 'src/user/entities/user.entity';
 
 @Entity('partner_references')
 export class PartnerReference {
@@ -44,4 +47,8 @@ export class PartnerReference {
 
   @UpdateDateColumn()
   updated_at: Date;
+
+  @ManyToOne(() => UserEntity, (user) => user.partner_references)
+  @JoinColumn({ name: 'entity_id', referencedColumnName: 'id' })
+  user: UserEntity;
 }

@@ -3,6 +3,8 @@ import { CreateUserDto } from '../../dto/create-user.dto';
 import { UserService } from '../user/user.service';
 import { LoginDto } from '../../dto/login.dto';
 import { UserEntity } from '../../entities/user.entity';
+import { PartnerEntityType } from 'src/global/enums/partner-reference.enum';
+import { PartnerReference } from 'src/global/entities/partner-reference.entity';
 
 @Injectable()
 export class AuthService {
@@ -17,9 +19,11 @@ export class AuthService {
     return await this.userService.createUser(userDto);
   }
 
-  async login(
-    loginRequest: LoginDto,
-  ): Promise<{ token: string; user: UserEntity } | void> {
+  async login(loginRequest: LoginDto): Promise<{
+    token: string;
+    user: UserEntity;
+    partnerRefs: PartnerReference[];
+  } | void> {
     const { email, password } = loginRequest;
     const user = await this.userService.isUserExists(email);
 
@@ -35,8 +39,9 @@ export class AuthService {
       const token = this.userService.getUserToken(user);
       user.token = token;
       await this.userService.updateUser(user);
+      const partnerRefs = user.partner_references;
 
-      return { token, user };
+      return { token, user, partnerRefs };
     }
 
     this.failLogin('Incorrect password');

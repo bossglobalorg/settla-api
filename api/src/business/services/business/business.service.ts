@@ -12,6 +12,8 @@ import { CreateBusinessDto } from '../../dto/create-business.dto';
 import { UpdateBusinessDto } from '../../dto/update-business.dto';
 import { BusinessIdentificationDto } from 'src/business/dto/business-identification.dto';
 import { GraphService } from 'src/global/services/graph/graph.service';
+import { PartnerEntityType } from 'src/global/enums/partner-reference.enum';
+import { PartnerReference } from 'src/global/entities/partner-reference.entity';
 
 @Injectable()
 export class BusinessService {
@@ -19,6 +21,8 @@ export class BusinessService {
     @InjectRepository(Business)
     private readonly businessRepository: Repository<Business>,
     private readonly graphService: GraphService,
+    @InjectRepository(PartnerReference)
+    private readonly partnerReferenceRepository: Repository<PartnerReference>,
   ) {}
 
   async createBasicInfo(
@@ -157,14 +161,38 @@ export class BusinessService {
     }
   }
 
-  async findByOwnerId(ownerId: string): Promise<Business[]> {
+  // business.service.ts
+
+  async findByOwnerId(userId: string): Promise<Business[]> {
     try {
+      // First, find the partner reference using the user's ID
+      const partnerReference = await this.partnerReferenceRepository.findOne({
+        where: {
+          entity_id: userId,
+          entity_type: PartnerEntityType.USER, // Ensure it's a user reference
+        },
+      });
+
+      if (!partnerReference) {
+        throw new NotFoundException('No partner reference found for this user');
+      }
+
+      // Use the entity_id from partner reference to find businesses
       const businesses = await this.businessRepository.find({
-        where: { owner_id: ownerId },
+        where: { owner_id: partnerReference.partner_entity_id },
         order: { dateCreated: 'DESC' },
       });
+
+      if (!businesses.length) {
+        throw new NotFoundException('No businesses found for this owner');
+      }
+
       return businesses;
     } catch (error) {
+      if (error instanceof NotFoundException) {
+        throw error;
+      }
+
       throw new HttpException(
         {
           message: 'Failed to fetch owner businesses',

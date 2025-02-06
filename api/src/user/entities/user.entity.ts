@@ -1,7 +1,8 @@
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../global/entities/base.entity';
 import { Business } from '../../business/entities/business.entity';
 import { DocumentDto } from '../dto/kyc/document.dto';
+import { PartnerReference } from 'src/global/entities/partner-reference.entity';
 
 @Entity({
   name: 'users',
@@ -124,4 +125,8 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => Business, (business) => business.owner_id)
   businesses: Business[];
+
+  @OneToMany(() => PartnerReference, (partnerRef) => partnerRef.entity_id)
+  @JoinColumn({ name: 'id', referencedColumnName: 'entity_id' })
+  partner_references: PartnerReference[];
 }

@@ -15,7 +15,6 @@ import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
-import { UserEntity } from './entities/user.entity';
 
 @ApiTags('user')
 @Controller('user')
@@ -46,12 +45,13 @@ export class UserController {
       throw new UnauthorizedException('Login failed');
     }
 
-    const { token, user } = response;
+    const { token, user, partnerRefs } = response;
 
     return {
       message: 'Login successful',
       token,
       user,
+      partnerRefs,
     };
   }
 
