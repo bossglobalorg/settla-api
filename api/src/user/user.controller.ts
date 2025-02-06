@@ -46,12 +46,12 @@ export class UserController {
       throw new UnauthorizedException('Login failed');
     }
 
-    const { token, data } = response;
+    const { token, user } = response;
 
     return {
       message: 'Login successful',
       token,
-      data,
+      user,
     };
   }
 

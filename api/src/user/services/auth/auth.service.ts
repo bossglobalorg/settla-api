@@ -19,7 +19,7 @@ export class AuthService {
 
   async login(
     loginRequest: LoginDto,
-  ): Promise<{ token: string; data: UserEntity } | void> {
+  ): Promise<{ token: string; user: UserEntity } | void> {
     const { email, password } = loginRequest;
     const user = await this.userService.isUserExists(email);
 
@@ -36,7 +36,7 @@ export class AuthService {
       user.token = token;
       await this.userService.updateUser(user);
 
-      return { token, data: user };
+      return { token, user };
     }
 
     this.failLogin('Incorrect password');
