@@ -130,8 +130,6 @@ export class GraphService {
       documents: [user.documents[0]],
     };
 
-    console.log({ formattedData });
-
     try {
       const response = await this.httpService.axiosRef.post(
         `${baseUrl}/person`,
