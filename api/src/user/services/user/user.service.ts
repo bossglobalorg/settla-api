@@ -34,7 +34,10 @@ export class UserService {
       lastName: userDto.lastName,
       passwordHash: await this.passwordService.generate(userDto.password),
       businessName: userDto.businessName.toLowerCase(),
+      idCountry: userDto.country,
     };
+
+    console.log({ userPayload });
 
     let newUser = this.usersRepository.create(userPayload);
     newUser = await this.updateUser(newUser);

@@ -70,8 +70,9 @@ export class UserEntity extends BaseEntity {
     type: 'enum',
     enum: ['US', 'NG'],
     nullable: true,
+    name: 'id_country',
   })
-  id_country: string;
+  idCountry: string;
 
   @Column({ nullable: true })
   bank_id_number: string;

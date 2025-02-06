@@ -15,7 +15,7 @@ export const mockUserEntity: UserEntity = {
   id_level: 'primary',
   id_type: 'null',
   id_number: 'null',
-  id_country: 'null',
+  idCountry: 'null',
   bank_id_number: 'null',
   kyc_level: 'basic',
   address: {},

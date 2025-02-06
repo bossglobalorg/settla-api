@@ -1,4 +1,9 @@
-import { IsEmail, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, IsEnum } from 'class-validator';
+
+export enum Country {
+  US = "US",
+  NG = "NG"
+}
 
 export class CreateUserDto {
   @IsString()
@@ -19,4 +24,8 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   businessName: string;
+
+  @IsEnum(Country, { message: 'Country must be either US or NG' })
+  @IsNotEmpty()
+  country: Country;
 }

@@ -122,7 +122,7 @@ export class GraphService {
       id_level: user.id_level,
       id_type: user.id_type,
       id_number: user.id_number,
-      id_country: user.id_country,
+      id_country: user.idCountry,
       bank_id_number: user.bank_id_number,
       kyc_level: user.kyc_level || 'basic',
       address: user.address || {},
