@@ -17,7 +17,9 @@ export class AuthService {
     return await this.userService.createUser(userDto);
   }
 
-  async login(loginRequest: LoginDto): Promise<string | void> {
+  async login(
+    loginRequest: LoginDto,
+  ): Promise<{ token: string; data: UserEntity } | void> {
     const { email, password } = loginRequest;
     const user = await this.userService.isUserExists(email);
 
@@ -34,7 +36,7 @@ export class AuthService {
       user.token = token;
       await this.userService.updateUser(user);
 
-      return token;
+      return { token, data: user };
     }
 
     this.failLogin('Incorrect password');

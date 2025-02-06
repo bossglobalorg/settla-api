@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  UnauthorizedException,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -14,6 +15,7 @@ import { JwtAuthGuard } from './guards/jwt-auth/jwt-auth.guard';
 import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
 import { CacheInterceptor } from '@nestjs/cache-manager';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { UserEntity } from './entities/user.entity';
 
 @ApiTags('user')
 @Controller('user')
@@ -38,11 +40,18 @@ export class UserController {
 
   @Post('login')
   async login(@Body() login: LoginDto) {
-    const token = await this.authService.login(login);
+    const response = await this.authService.login(login);
+
+    if (!response) {
+      throw new UnauthorizedException('Login failed');
+    }
+
+    const { token, data } = response;
 
     return {
       message: 'Login successful',
       token,
+      data,
     };
   }
 
