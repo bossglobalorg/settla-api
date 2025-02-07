@@ -3,6 +3,7 @@ import {
   Controller,
   Get,
   Post,
+  UnauthorizedException,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -38,11 +39,19 @@ export class UserController {
 
   @Post('login')
   async login(@Body() login: LoginDto) {
-    const token = await this.authService.login(login);
+    const response = await this.authService.login(login);
+
+    if (!response) {
+      throw new UnauthorizedException('Login failed');
+    }
+
+    const { token, user, business } = response;
 
     return {
       message: 'Login successful',
       token,
+      user,
+      business,
     };
   }
 

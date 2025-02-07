@@ -1,16 +1,8 @@
-// src/user/services/user-kyc.service.ts
-import { Injectable, Logger, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { UserEntity } from '../../entities/user.entity';
-
 import { GraphService } from 'src/global/services/graph/graph.service';
-import {
-  PartnerEntityType,
-  PartnerName,
-} from 'src/global/enums/partner-reference.enum';
-import { UserKycDto } from 'src/user/dto/kyc.dto';
-import { PartnerReferenceService } from 'src/global/services/partner-reference/partner-reference.service';
 import { PersonalInfoDto } from 'src/user/dto/kyc/personal-info.dto';
 import { IdentificationDto } from 'src/user/dto/kyc/identification.dto';
 import { BackgroundInfoDto } from 'src/user/dto/kyc/background-info.dto';
@@ -71,13 +63,21 @@ export class UserKycService {
 
     const updatedUser = await this.userRepository.save(user);
 
-    // If all required documents are uploaded, send to Graph
     if (this.isKycComplete(updatedUser)) {
-      await this.graphService.verifyUserKyc(updatedUser);
-      user.kyc_status = 'completed';
-      return await this.userRepository.save(user);
-    }
+      try {
+        const verificationResult =
+          await this.graphService.verifyUserKyc(updatedUser);
+        if (verificationResult?.kyc_status === 'verified') {
+          user.kyc_status = 'completed';
+          user.kyc_step = 'completed';
+          return await this.userRepository.save(user);
+        }
 
+        throw new Error('KYC verification response was not successful');
+      } catch (error) {
+        throw error;
+      }
+    }
     return updatedUser;
   }
 

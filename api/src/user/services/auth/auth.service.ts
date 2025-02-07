@@ -3,6 +3,9 @@ import { CreateUserDto } from '../../dto/create-user.dto';
 import { UserService } from '../user/user.service';
 import { LoginDto } from '../../dto/login.dto';
 import { UserEntity } from '../../entities/user.entity';
+import { PartnerEntityType } from 'src/global/enums/partner-reference.enum';
+import { PartnerReference } from 'src/global/entities/partner-reference.entity';
+import { Business } from 'src/business/entities/business.entity';
 
 @Injectable()
 export class AuthService {
@@ -17,7 +20,11 @@ export class AuthService {
     return await this.userService.createUser(userDto);
   }
 
-  async login(loginRequest: LoginDto): Promise<string | void> {
+  async login(loginRequest: LoginDto): Promise<{
+    token: string;
+    user: UserEntity;
+    business: Business | null;
+  } | void> {
     const { email, password } = loginRequest;
     const user = await this.userService.isUserExists(email);
 
@@ -31,10 +38,11 @@ export class AuthService {
 
     if (await this.userService.checkUserPassword(user, password)) {
       const token = this.userService.getUserToken(user);
+      const business = await this.userService.getUserBusiness(user);
       user.token = token;
       await this.userService.updateUser(user);
 
-      return token;
+      return { token, user, business };
     }
 
     this.failLogin('Incorrect password');

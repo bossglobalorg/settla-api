@@ -1,7 +1,8 @@
-import { Entity, Column, OneToMany } from 'typeorm';
+import { Entity, Column, OneToMany, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../global/entities/base.entity';
 import { Business } from '../../business/entities/business.entity';
 import { DocumentDto } from '../dto/kyc/document.dto';
+import { PartnerReference } from 'src/global/entities/partner-reference.entity';
 
 @Entity({
   name: 'users',
@@ -53,35 +54,39 @@ export class UserEntity extends BaseEntity {
     type: 'enum',
     enum: ['primary', 'secondary'],
     nullable: true,
+    name: 'id_level',
   })
-  id_level: string;
+  idLevel: string;
 
   @Column({
     type: 'enum',
     enum: ['passport', 'national_id', 'drivers_license'],
     nullable: true,
+    name: 'id_type',
   })
-  id_type: string;
+  idType: string;
 
-  @Column({ nullable: true })
-  id_number: string;
+  @Column({ nullable: true, name: 'id_number' })
+  idNumber: string;
 
   @Column({
     type: 'enum',
     enum: ['US', 'NG'],
     nullable: true,
+    name: 'id_country',
   })
-  id_country: string;
+  idCountry: string;
 
-  @Column({ nullable: true })
-  bank_id_number: string;
+  @Column({ nullable: true, name: 'bank_id_number' })
+  bankIdNumber: string;
 
   @Column({
     type: 'enum',
     enum: ['basic', 'preliminary'],
     nullable: true,
+    name: 'kyc_level',
   })
-  kyc_level: string;
+  kycLevel: string;
 
   @Column({ type: 'jsonb', nullable: true })
   address: Record<string, any>;
@@ -120,4 +125,8 @@ export class UserEntity extends BaseEntity {
 
   @OneToMany(() => Business, (business) => business.owner_id)
   businesses: Business[];
+
+  @OneToMany(() => PartnerReference, (partnerRef) => partnerRef.entity_id)
+  @JoinColumn({ name: 'id', referencedColumnName: 'entity_id' })
+  partner_references: PartnerReference[];
 }

@@ -119,15 +119,14 @@ export class GraphService {
       phone: user.phone,
       email: user.email,
       dob: user.dob,
-      id_level: user.id_level,
-      id_type: user.id_type,
-      id_number: user.id_number,
-      id_country: user.id_country,
-      bank_id_number: user.bank_id_number,
-      kyc_level: user.kyc_level || 'basic',
+      id_level: user.idLevel,
+      id_type: user.idType,
+      id_number: user.idNumber,
+      id_country: user.idCountry,
+      bank_id_number: user.bankIdNumber,
+      kyc_level: user.kycLevel || 'basic',
       address: user.address || {},
       background_information: user.background_information || {},
-      documents: user.documents || [],
     };
 
     try {
@@ -157,7 +156,7 @@ export class GraphService {
         verificationStatus: response.data.data.kyc_status,
       });
 
-      return response.data;
+      return response.data.data;
     } catch (error) {
       this.logger.error(
         `Failed to verify KYC with Graph for user ${user.id}`,

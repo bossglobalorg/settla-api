@@ -7,6 +7,12 @@ import { PasswordService } from '../password/password.service';
 import { JwtService } from '../jwt/jwt.service';
 import { MailService } from 'src/global/services/mail/mail.service';
 import { OTPService } from '../otp/otp.service';
+import { Business } from 'src/business/entities/business.entity';
+import { PartnerReference } from 'src/global/entities/partner-reference.entity';
+import {
+  PartnerEntityType,
+  PartnerName,
+} from 'src/global/enums/partner-reference.enum';
 
 @Injectable()
 export class UserService {
@@ -16,7 +22,11 @@ export class UserService {
     private readonly passwordService: PasswordService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
-    private readonly otpService: OTPService, // Inject MailService
+    private readonly otpService: OTPService,
+    @InjectRepository(Business)
+    private businessRepository: Repository<Business>,
+    @InjectRepository(PartnerReference)
+    private partnerRepository: Repository<PartnerReference>,
   ) {}
 
   async isUserExists(email: string): Promise<UserEntity | null> {
@@ -34,6 +44,7 @@ export class UserService {
       lastName: userDto.lastName,
       passwordHash: await this.passwordService.generate(userDto.password),
       businessName: userDto.businessName.toLowerCase(),
+      idCountry: userDto.country,
     };
 
     let newUser = this.usersRepository.create(userPayload);
@@ -65,6 +76,25 @@ export class UserService {
       firstName: user.firstName,
       lastName: user.lastName,
       businessName: user.businessName.toLowerCase(),
+    });
+  }
+
+  public async getUserBusiness(user: UserEntity): Promise<Business | null> {
+    const partnerRef = await this.partnerRepository.findOne({
+      where: {
+        entity_id: user.id,
+        entity_type: PartnerEntityType.USER,
+        partner_name: PartnerName.GRAPH,
+      },
+    });
+
+    if (!partnerRef) {
+      return null;
+    }
+    return this.businessRepository.findOne({
+      where: {
+        owner_id: partnerRef.partner_entity_id,
+      },
     });
   }
 
@@ -103,11 +133,9 @@ export class UserService {
     try {
       // Test OTP flow to debug
       const testResult = await this.otpService.testOtpFlow(email);
-      console.log('Test OTP Flow:', testResult);
 
       // Verify the submitted OTP
       const isValid = await this.otpService.verifyTimedOtp(email, submittedOtp);
-      console.log('OTP Verification Result:', { email, submittedOtp, isValid });
 
       if (!isValid) {
         throw new HttpException(
