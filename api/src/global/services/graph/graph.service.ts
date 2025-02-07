@@ -67,6 +67,7 @@ export class GraphService {
       proof_of_address: business.proof_of_address_doc || null,
     };
 
+    console.log({ formattedData });
     try {
       const response = await this.httpService.axiosRef.post(
         `${baseUrl}/business`,
@@ -127,7 +128,6 @@ export class GraphService {
       kyc_level: user.kycLevel || 'basic',
       address: user.address || {},
       background_information: user.background_information || {},
-      documents: [user.documents[0]],
     };
 
     try {
@@ -157,7 +157,7 @@ export class GraphService {
         verificationStatus: response.data.data.kyc_status,
       });
 
-      return response.data;
+      return response.data.data;
     } catch (error) {
       this.logger.error(
         `Failed to verify KYC with Graph for user ${user.id}`,

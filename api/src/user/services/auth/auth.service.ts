@@ -39,6 +39,7 @@ export class AuthService {
     if (await this.userService.checkUserPassword(user, password)) {
       const token = this.userService.getUserToken(user);
       const business = await this.userService.getUserBusiness(user);
+      console.log({ business });
       user.token = token;
       await this.userService.updateUser(user);
 

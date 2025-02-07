@@ -63,14 +63,21 @@ export class UserKycService {
 
     const updatedUser = await this.userRepository.save(user);
 
-    // If all required documents are uploaded, send to Graph
     if (this.isKycComplete(updatedUser)) {
-      await this.graphService.verifyUserKyc(updatedUser);
-      user.kyc_status = 'completed';
-      user.kyc_step = 'completed';
-      return await this.userRepository.save(user);
-    }
+      try {
+        const verificationResult =
+          await this.graphService.verifyUserKyc(updatedUser);
+        if (verificationResult?.kyc_status === 'verified') {
+          user.kyc_status = 'completed';
+          user.kyc_step = 'completed';
+          return await this.userRepository.save(user);
+        }
 
+        throw new Error('KYC verification response was not successful');
+      } catch (error) {
+        throw error;
+      }
+    }
     return updatedUser;
   }
 

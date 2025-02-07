@@ -88,9 +88,12 @@ export class UserService {
       },
     });
 
+    if (!partnerRef) {
+      return null;
+    }
     return this.businessRepository.findOne({
       where: {
-        owner_id: partnerRef?.partner_entity_id,
+        owner_id: partnerRef.partner_entity_id,
       },
     });
   }
