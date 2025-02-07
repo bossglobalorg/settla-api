@@ -1,5 +1,6 @@
-import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { BaseEntity } from '../../global/entities/base.entity';
+import { UserEntity } from 'src/user/entities/user.entity';
 
 @Entity('businesses')
 export class Business extends BaseEntity {
@@ -97,4 +98,8 @@ export class Business extends BaseEntity {
 
   @Column({ type: 'jsonb', nullable: true })
   kyb_response: any;
+
+  @ManyToOne(() => UserEntity)
+  @JoinColumn({ name: 'owner_id' })
+  owner: UserEntity;
 }

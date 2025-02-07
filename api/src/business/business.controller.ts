@@ -73,8 +73,10 @@ export class BusinessController {
       if (!partnerReference) {
         throw new HttpException(
           {
-            message: 'Partner reference not found',
-            errors: ['No partner reference found for the user'],
+            message: 'Identity verification required',
+            errors: [
+              'Your account requires KYC verification. Please complete the verification process to access this feature.',
+            ],
           },
           HttpStatus.NOT_FOUND,
         );

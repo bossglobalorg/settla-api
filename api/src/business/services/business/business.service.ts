@@ -183,9 +183,9 @@ export class BusinessService {
         order: { dateCreated: 'DESC' },
       });
 
-      if (!businesses.length) {
-        throw new NotFoundException('No businesses found for this owner');
-      }
+      // if (!businesses.length) {
+      //   throw new NotFoundException('No businesses found for this owner');
+      // }
 
       return businesses;
     } catch (error) {

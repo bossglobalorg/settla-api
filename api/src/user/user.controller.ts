@@ -45,13 +45,13 @@ export class UserController {
       throw new UnauthorizedException('Login failed');
     }
 
-    const { token, user, partnerRefs } = response;
+    const { token, user, business } = response;
 
     return {
       message: 'Login successful',
       token,
       user,
-      partnerRefs,
+      business,
     };
   }
 
