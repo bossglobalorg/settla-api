@@ -133,11 +133,9 @@ export class UserService {
     try {
       // Test OTP flow to debug
       const testResult = await this.otpService.testOtpFlow(email);
-      console.log('Test OTP Flow:', testResult);
 
       // Verify the submitted OTP
       const isValid = await this.otpService.verifyTimedOtp(email, submittedOtp);
-      console.log('OTP Verification Result:', { email, submittedOtp, isValid });
 
       if (!isValid) {
         throw new HttpException(

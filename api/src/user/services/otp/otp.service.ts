@@ -40,13 +40,6 @@ export class OTPService {
       const expiryTime = this.getExpiryTime(otpType);
       const key = this.generateBase32Key(email);
 
-      console.log('Verification Attempt:', {
-        email,
-        submittedOtp,
-        key,
-        expiryTime,
-      });
-
       const isValid = speakeasy.totp.verify({
         secret: key,
         encoding: 'base32',
@@ -56,7 +49,6 @@ export class OTPService {
         digits: 5,
       });
 
-      console.log('Verification Result:', isValid);
       return isValid;
     } catch (error) {
       console.error('Error verifying OTP:', error);
@@ -68,12 +60,6 @@ export class OTPService {
     try {
       const expiryTime = this.getExpiryTime(otpType);
       const key = this.generateBase32Key(email);
-
-      console.log('Generation Attempt:', {
-        email,
-        key,
-        expiryTime,
-      });
 
       const otp = speakeasy.totp({
         secret: key,
@@ -131,8 +117,6 @@ export class OTPService {
       if (!result.success || !result.otp) {
         throw new Error('Failed to generate OTP');
       }
-
-      console.log('Generated OTP:', result.otp);
 
       // Verify immediately
       const isValid = await this.verifyTimedOtp(email, result.otp);
