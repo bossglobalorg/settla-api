@@ -13,7 +13,6 @@ import { OTPService } from './services/otp/otp.service';
 import { UserKycController } from './user.kyc.controller';
 import { UserKycService } from './services/kyc/kyc.service';
 import { GraphService } from 'src/global/services/graph/graph.service';
-import { HttpService } from '@nestjs/axios';
 import { PartnerReferenceService } from 'src/global/services/partner-reference/partner-reference.service';
 import { Business } from 'src/business/entities/business.entity';
 import { PartnerReference } from 'src/global/entities/partner-reference.entity';
