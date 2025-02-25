@@ -1,0 +1,11 @@
+.next
+.husky
+.dependency-cruiser.js
+.idea
+.vscode
+.react-email
+github
+node_modules
+dist
+documentation
+**/main.ts
