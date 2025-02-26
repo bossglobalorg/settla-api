@@ -1,33 +1,27 @@
 // src/business/services/graph.service.ts
+import { PartnerEntityType, PartnerName } from 'src/global/enums/partner-reference.enum'
+import { GraphConfig } from 'src/services/app-config/configuration'
+import { Repository } from 'typeorm'
+
+import { HttpService } from '@nestjs/axios'
 import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
-import { HttpService } from '@nestjs/axios'
-import { GraphConfig } from 'src/services/app-config/configuration'
 import { InjectRepository } from '@nestjs/typeorm'
-import { Repository } from 'typeorm'
+
+import { Business } from '@features/business/entities/business.entity'
+import { UserEntity } from '@features/user/entities/user.entity'
+
 import { PartnerReferenceService } from '../../../global/services/partner-reference/partner-reference.service'
-import {
-  PartnerEntityType,
-  PartnerName,
-} from 'src/global/enums/partner-reference.enum'
 import { CreatePayoutDestinationDto } from './dto/create-payout-destination.dto'
-import { GraphUtils } from './graph.utils'
+import { CreatePayoutDto } from './dto/create-payout.dto'
 import {
   FetchPayoutDestinationsResponseDto,
   PayoutDestinationDto,
 } from './dto/fetch-payout-destinations.dto'
-import { CreatePayoutDto } from './dto/create-payout.dto'
-import { Business } from '@features/business/entities/business.entity'
-import { UserEntity } from '@features/user/entities/user.entity'
+import { GraphUtils } from './graph.utils'
 
-type BusinessType =
-  | 'soleProprietor'
-  | 'singleMemberLLC'
-  | 'limitedLiabilityCompany'
-type GraphBusinessType =
-  | 'soleProprietor'
-  | 'singleMemberLLC'
-  | 'limitedLiabilityCompany'
+type BusinessType = 'soleProprietor' | 'singleMemberLLC' | 'limitedLiabilityCompany'
+type GraphBusinessType = 'soleProprietor' | 'singleMemberLLC' | 'limitedLiabilityCompany'
 
 @Injectable()
 export class GraphService {
@@ -41,20 +35,16 @@ export class GraphService {
     private readonly businessRepository: Repository<Business>,
     private readonly partnerReferenceService: PartnerReferenceService,
     @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>
+    private readonly userRepository: Repository<UserEntity>,
   ) {}
 
   async completeKyb(business: Business): Promise<void> {
-    const { baseUrl, apiKey } = this.configService.get<GraphConfig>(
-      'graph'
-    ) as GraphConfig
+    const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
     const formattedData = {
       owner_id: business.owner_id,
       name: business.name,
-      business_type: this.formatBusinessType(
-        business.business_type as BusinessType
-      ),
+      business_type: this.formatBusinessType(business.business_type as BusinessType),
       industry: business.industry,
       id_type: business.id_type,
       id_number: business.id_number,
@@ -76,17 +66,13 @@ export class GraphService {
     }
 
     try {
-      const response = await this.httpService.axiosRef.post(
-        `${baseUrl}/business`,
-        formattedData,
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-            'X-Source': 'settla',
-          },
-        }
-      )
+      const response = await this.httpService.axiosRef.post(`${baseUrl}/business`, formattedData, {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'X-Source': 'settla',
+        },
+      })
 
       business.kyb_status = response.data.data.kyb_status
       business.kyb_response = response.data.data
@@ -103,12 +89,12 @@ export class GraphService {
       })
 
       this.logger.log(
-        `Successfully sent KYB data to Graph for business ${business.id}. Status: ${response.status}`
+        `Successfully sent KYB data to Graph for business ${business.id}. Status: ${response.status}`,
       )
     } catch (error) {
       this.logger.error(
         `Failed to send KYB data to Graph for business ${business.id}`,
-        error.response?.data || error.message
+        error.response?.data || error.message,
       )
       throw error
     }
@@ -116,9 +102,7 @@ export class GraphService {
 
   // src/global/services/graph/graph.service.ts
   async verifyUserKyc(user: UserEntity): Promise<any> {
-    const { baseUrl, apiKey } = this.configService.get<GraphConfig>(
-      'graph'
-    ) as GraphConfig
+    const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
     const formattedData = {
       name_first: user.firstName,
@@ -138,17 +122,13 @@ export class GraphService {
     }
 
     try {
-      const response = await this.httpService.axiosRef.post(
-        `${baseUrl}/person`,
-        formattedData,
-        {
-          headers: {
-            Authorization: `Bearer ${apiKey}`,
-            'Content-Type': 'application/json',
-            'X-Source': 'settla',
-          },
-        }
-      )
+      const response = await this.httpService.axiosRef.post(`${baseUrl}/person`, formattedData, {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'X-Source': 'settla',
+        },
+      })
 
       user.kyc_status = response.data.data.kyc_status
       user.kyc_response = response.data.data
@@ -168,7 +148,7 @@ export class GraphService {
     } catch (error) {
       this.logger.error(
         `Failed to verify KYC with Graph for user ${user.id}`,
-        error.response?.data || error.message
+        error.response?.data || error.message,
       )
       throw error
     }
@@ -186,61 +166,44 @@ export class GraphService {
 
   // payouts
   async createPayoutDestination(
-    payoutDestination: CreatePayoutDestinationDto
+    payoutDestination: CreatePayoutDestinationDto,
   ): Promise<PayoutDestinationDto> {
-    const { baseUrl, apiKey } = this.configService.get<GraphConfig>(
-      'graph'
-    ) as GraphConfig
+    const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
     const response = await this.httpService.axiosRef.post(
       `${baseUrl}/payout-destination`,
-      payoutDestination
+      payoutDestination,
     )
 
     return response.data.data
   }
 
   async listPayoutDestinations(): Promise<FetchPayoutDestinationsResponseDto> {
-    const { baseUrl, apiKey } = this.configService.get<GraphConfig>(
-      'graph'
-    ) as GraphConfig
+    const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    const response = await this.httpService.axiosRef.get(
-      `${baseUrl}/payout-destination`
-    )
+    const response = await this.httpService.axiosRef.get(`${baseUrl}/payout-destination`)
 
     return response.data.data
   }
 
   async getPayoutDestination(id: string): Promise<PayoutDestinationDto> {
-    const { baseUrl, apiKey } = this.configService.get<GraphConfig>(
-      'graph'
-    ) as GraphConfig
+    const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    const response = await this.httpService.axiosRef.get(
-      `${baseUrl}/payout-destination/${id}`
-    )
+    const response = await this.httpService.axiosRef.get(`${baseUrl}/payout-destination/${id}`)
 
     return response.data.data
   }
 
   async createPayout(payout: CreatePayoutDto): Promise<any> {
-    const { baseUrl, apiKey } = this.configService.get<GraphConfig>(
-      'graph'
-    ) as GraphConfig
+    const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    const response = await this.httpService.axiosRef.post(
-      `${baseUrl}/payout`,
-      payout
-    )
+    const response = await this.httpService.axiosRef.post(`${baseUrl}/payout`, payout)
 
     return response.data.data
   }
 
   async listPayouts(): Promise<any> {
-    const { baseUrl, apiKey } = this.configService.get<GraphConfig>(
-      'graph'
-    ) as GraphConfig
+    const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
     const response = await this.httpService.axiosRef.get(`${baseUrl}/payout`)
 
@@ -248,13 +211,17 @@ export class GraphService {
   }
 
   async getPayout(id: string): Promise<any> {
-    const { baseUrl, apiKey } = this.configService.get<GraphConfig>(
-      'graph'
-    ) as GraphConfig
+    const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    const response = await this.httpService.axiosRef.get(
-      `${baseUrl}/payout/${id}`
-    )
+    const response = await this.httpService.axiosRef.get(`${baseUrl}/payout/${id}`)
+
+    return response.data.data
+  }
+
+  async listWallets(): Promise<any> {
+    const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
+
+    const response = await this.httpService.axiosRef.get(`${baseUrl}/wallet_account`)
 
     return response.data.data
   }

@@ -18,9 +18,7 @@ export const getConfig = (): AppConfig => {
       otpSecret: 'test',
     },
     cache: {
-      host: process.env.REDIS_HOST as string,
-      port: parseInt(process.env.REDIS_PORT as string, 10) || 6379,
-      password: process.env.REDIS_PASSWORD as string,
+      url: process.env.REDIS_URL as string,
     },
     mail: {
       from: process.env.MAIL_FROM as string,
@@ -42,20 +40,20 @@ export const getConfig = (): AppConfig => {
       apiKey: process.env.GRAPH_API_KEY as string,
       baseUrl: process.env.GRAPH_BASE_URL as string,
     },
-  };
-};
+  }
+}
 
 export interface AppConfig {
-  port: number;
-  appEnv: AppEnv;
-  jwtSecret: string;
-  logLevel: string;
-  database: DbConfig;
-  cache: CacheConfig;
-  mail: MailConfig;
-  auth: AuthConfig;
-  cloudinary: CloudinaryConfig; // Add this line
-  graph: GraphConfig;
+  port: number
+  appEnv: AppEnv
+  jwtSecret: string
+  logLevel: string
+  database: DbConfig
+  cache: CacheConfig
+  mail: MailConfig
+  auth: AuthConfig
+  cloudinary: CloudinaryConfig // Add this line
+  graph: GraphConfig
 }
 
 export enum AppEnv {
@@ -65,45 +63,43 @@ export enum AppEnv {
 }
 
 export interface DbConfig {
-  host: string;
-  port: number;
-  user: string;
-  password: string;
-  dbName: string;
-  isSync: boolean;
+  host: string
+  port: number
+  user: string
+  password: string
+  dbName: string
+  isSync: boolean
 }
 
 export interface CacheConfig {
-  host: string;
-  port: number;
-  password: string;
+  url: string
 }
 
 export interface MailConfig {
-  from: string;
+  from: string
   transportOptions: {
-    host: string;
-    port: number;
+    host: string
+    port: number
     auth: {
-      user: string;
-      pass: string;
-    };
-  };
+      user: string
+      pass: string
+    }
+  }
 }
 
 export interface AuthConfig {
-  resetExpiryTime: number;
-  verifyExpiryTime: number;
-  otpSecret: string;
+  resetExpiryTime: number
+  verifyExpiryTime: number
+  otpSecret: string
 }
 
 export interface CloudinaryConfig {
-  cloudName: string;
-  apiKey: string;
-  apiSecret: string;
+  cloudName: string
+  apiKey: string
+  apiSecret: string
 }
 
 export interface GraphConfig {
-  apiKey: string;
-  baseUrl: string;
+  apiKey: string
+  baseUrl: string
 }

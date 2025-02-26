@@ -1,18 +1,18 @@
+import { MailService } from 'src/modules/providers/mail/mail.service'
+import { Repository } from 'typeorm'
+
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
-import { UserEntity } from '../../entities/user.entity'
-import { Repository } from 'typeorm'
-import { CreateUserDto } from '../../dto/create-user.dto'
-import { PasswordService } from '../password/password.service'
-import { JwtService } from '../jwt/jwt.service'
-import { MailService } from 'src/modules/providers/mail/mail.service'
-import { OTPService } from '../otp/otp.service'
+
 import { Business } from '@features/business/entities/business.entity'
 import { PartnerReference } from '@global/entities/partner-reference.entity'
-import {
-  PartnerEntityType,
-  PartnerName,
-} from '@global/enums/partner-reference.enum'
+import { PartnerEntityType, PartnerName } from '@global/enums/partner-reference.enum'
+
+import { CreateUserDto } from '../../dto/create-user.dto'
+import { UserEntity } from '../../entities/user.entity'
+import { JwtService } from '../jwt/jwt.service'
+import { OTPService } from '../otp/otp.service'
+import { PasswordService } from '../password/password.service'
 
 @Injectable()
 export class UserService {
@@ -26,7 +26,7 @@ export class UserService {
     @InjectRepository(Business)
     private businessRepository: Repository<Business>,
     @InjectRepository(PartnerReference)
-    private partnerRepository: Repository<PartnerReference>
+    private partnerRepository: Repository<PartnerReference>,
   ) {}
 
   async isUserExists(email: string): Promise<UserEntity | null> {
@@ -50,9 +50,9 @@ export class UserService {
     let newUser = this.usersRepository.create(userPayload)
     newUser = await this.updateUser(newUser)
 
-    const { otp, expiryTime } = await this.otpService.generateTimedOtp(
-      newUser.email
-    )
+    const { otp, expiryTime } = await this.otpService.generateTimedOtp(newUser.email)
+
+    console.log('OTP_CODE', otp)
 
     this.sendUserOtp(newUser.email, otp, expiryTime)
     return await this.updateUser(newUser)
@@ -62,10 +62,7 @@ export class UserService {
     return await this.usersRepository.save(newUser)
   }
 
-  async checkUserPassword(
-    user: UserEntity,
-    requestPassword: string
-  ): Promise<boolean> {
+  async checkUserPassword(user: UserEntity, requestPassword: string): Promise<boolean> {
     return this.passwordService.compare(requestPassword, user.passwordHash)
   }
 
@@ -98,11 +95,7 @@ export class UserService {
     })
   }
 
-  private async sendUserOtp(
-    email: string,
-    otp: string | null,
-    expiryTime: number
-  ): Promise<void> {
+  private async sendUserOtp(email: string, otp: string | null, expiryTime: number): Promise<void> {
     const subject = 'Your OTP for Registration'
     const htmlContent = `
       <p>Dear user,</p>
@@ -120,10 +113,7 @@ export class UserService {
     })
   }
 
-  async verifyOtpAndGenerateToken(
-    email: string,
-    submittedOtp: string
-  ): Promise<string> {
+  async verifyOtpAndGenerateToken(email: string, submittedOtp: string): Promise<string> {
     const user = await this.isUserExists(email)
 
     if (!user) {
@@ -138,10 +128,7 @@ export class UserService {
       const isValid = await this.otpService.verifyTimedOtp(email, submittedOtp)
 
       if (!isValid) {
-        throw new HttpException(
-          'OTP Verification failed',
-          HttpStatus.BAD_REQUEST
-        )
+        throw new HttpException('OTP Verification failed', HttpStatus.BAD_REQUEST)
       }
 
       const user = await this.usersRepository.findOne({ where: { email } })
@@ -155,10 +142,7 @@ export class UserService {
       return this.getUserToken(user)
     } catch (error) {
       console.error('OTP Verification Error:', error)
-      throw new HttpException(
-        error.message || 'OTP Verification failed',
-        HttpStatus.BAD_REQUEST
-      )
+      throw new HttpException(error.message || 'OTP Verification failed', HttpStatus.BAD_REQUEST)
     }
   }
 
