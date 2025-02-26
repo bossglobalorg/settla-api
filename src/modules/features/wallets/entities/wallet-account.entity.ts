@@ -12,7 +12,7 @@ export class WalletAccount {
   balance: number
 
   @Column({ nullable: true })
-  blockExpiry: Date | null
+  blockExpiry: Date
 
   @Column()
   kind: string
