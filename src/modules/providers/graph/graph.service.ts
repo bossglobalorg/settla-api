@@ -42,7 +42,7 @@ export class GraphService {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
     const formattedData = {
-      owner_id: business.owner_id,
+      owner_id: business.partner_entity_id,
       name: business.name,
       business_type: this.formatBusinessType(business.business_type as BusinessType),
       industry: business.industry,
@@ -103,6 +103,8 @@ export class GraphService {
   // src/global/services/graph/graph.service.ts
   async verifyUserKyc(user: UserEntity): Promise<any> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
+
+    console.log(user)
 
     const formattedData = {
       name_first: user.firstName,

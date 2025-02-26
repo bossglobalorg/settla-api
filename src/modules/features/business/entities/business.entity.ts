@@ -11,6 +11,9 @@ export class Business extends BaseEntity {
   @Column()
   owner_id: string
 
+  @Column()
+  partner_entity_id: string
+
   // Basic Information Section
   @Column({ nullable: true })
   name: string

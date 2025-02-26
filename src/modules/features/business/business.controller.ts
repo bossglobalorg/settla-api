@@ -52,6 +52,7 @@ export class BusinessController {
   ): Promise<Business> {
     try {
       const existingBusiness = await this.businessService.findByOwnerId(req.user.id)
+
       if (existingBusiness.length) {
         throw new HttpException(
           {
@@ -81,7 +82,8 @@ export class BusinessController {
       }
 
       const businessData = {
-        owner_id: partnerReference.partner_entity_id,
+        owner_id: partnerReference.entity_id,
+        partner_entity_id: partnerReference.partner_entity_id,
         name: req.user.businessName,
         business_type: basicInfoData.business_type,
         industry: basicInfoData.industry,
@@ -100,6 +102,7 @@ export class BusinessController {
 
       return await this.businessService.createBasicInfo(businessData)
     } catch (error) {
+      console.log(error)
       if (error instanceof HttpException) {
         throw error
       }

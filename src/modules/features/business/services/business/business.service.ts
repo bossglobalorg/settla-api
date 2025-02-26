@@ -60,6 +60,7 @@ export class BusinessService {
   ): Promise<Business> {
     const business = await this.businessRepository.findOne({
       where: { id: businessId },
+      relations: ['owner'],
     })
 
     if (!business) {

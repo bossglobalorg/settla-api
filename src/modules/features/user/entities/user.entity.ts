@@ -1,8 +1,10 @@
-import { Entity, Column, OneToMany, JoinColumn } from 'typeorm'
+import { Column, Entity, JoinColumn, OneToMany } from 'typeorm'
+
+import { BaseEntity } from '@global/entities/base.entity'
+import { PartnerReference } from '@global/entities/partner-reference.entity'
+
 import { Business } from '../../business/entities/business.entity'
 import { DocumentDto } from '../dto/kyc/document.dto'
-import { PartnerReference } from '@global/entities/partner-reference.entity'
-import { BaseEntity } from '@global/entities/base.entity'
 
 @Entity({
   name: 'users',
@@ -60,7 +62,7 @@ export class UserEntity extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: ['passport', 'national_id', 'drivers_license'],
+    enum: ['passport', 'national_id', 'drivers_license', 'nin'],
     nullable: true,
     name: 'id_type',
   })
@@ -105,14 +107,7 @@ export class UserEntity extends BaseEntity {
 
   @Column({
     type: 'enum',
-    enum: [
-      'draft',
-      'personal_info',
-      'identification',
-      'background',
-      'documents',
-      'completed',
-    ],
+    enum: ['draft', 'personal_info', 'identification', 'background', 'documents', 'completed'],
     default: 'draft',
   })
   kyc_step: string
