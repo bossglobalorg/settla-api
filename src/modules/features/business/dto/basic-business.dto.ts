@@ -5,11 +5,12 @@ import {
   IsEmail,
   IsPhoneNumber,
   IsOptional,
+  isEmpty,
 } from 'class-validator';
 
 export class BusinessBasicInfoDto {
   @IsString()
-  @IsNotEmpty({ message: 'Business name is required' })
+  @IsOptional()
   name?: string;
 
   @IsString()

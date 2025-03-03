@@ -51,7 +51,10 @@ export class BusinessController {
     @Body() basicInfoData: BusinessBasicInfoDto,
   ): Promise<Business> {
     try {
+      console.log({ req: req.user.id }, "8888888")
       const existingBusiness = await this.businessService.findByOwnerId(req.user.id)
+
+      console.log({ existingBusiness })
 
       if (existingBusiness.length) {
         throw new HttpException(

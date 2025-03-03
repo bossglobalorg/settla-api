@@ -161,27 +161,10 @@ export class BusinessService {
 
   async findByOwnerId(userId: string): Promise<Business[]> {
     try {
-      // First, find the partner reference using the user's ID
-      const partnerReference = await this.partnerReferenceRepository.findOne({
-        where: {
-          entity_id: userId,
-          entity_type: PartnerEntityType.USER, // Ensure it's a user reference
-        },
-      })
-
-      if (!partnerReference) {
-        throw new NotFoundException('No partner reference found for this user')
-      }
-
-      // Use the entity_id from partner reference to find businesses
       const businesses = await this.businessRepository.find({
-        where: { owner_id: partnerReference.partner_entity_id },
+        where: { owner_id: userId },
         order: { dateCreated: 'DESC' },
       })
-
-      // if (!businesses.length) {
-      //   throw new NotFoundException('No businesses found for this owner');
-      // }
 
       return businesses
     } catch (error) {
