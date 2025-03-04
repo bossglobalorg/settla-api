@@ -1,27 +1,29 @@
-import { IsEnum, IsNotEmpty, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
 export class IdentificationDto {
   @IsString()
   @IsEnum(['primary', 'secondary'])
-  idLevel: string;
+  @IsOptional()
+  idLevel: string = 'primary'
 
   @IsString()
   @IsEnum(['passport', 'national_id', 'drivers_license', 'voters_card', 'nin'])
-  idType: string;
+  idType: string
 
   @IsString()
   @IsNotEmpty()
-  idNumber: string;
+  idNumber: string
 
   @IsString()
   @IsNotEmpty()
-  bankIdNumber: string;
+  bankIdNumber: string
 
   @IsString()
   @IsEnum(['NG', 'US'])
-  idCountry: string;
+  idCountry: string
 
   @IsString()
   @IsEnum(['basic', 'preliminary'])
-  kycLevel: string;
+  @IsOptional()
+  kycLevel: string = 'basic'
 }

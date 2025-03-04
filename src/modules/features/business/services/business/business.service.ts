@@ -24,6 +24,7 @@ export class BusinessService {
 
   async createBasicInfo(businessData: Partial<CreateBusinessDto>): Promise<Business> {
     const business = this.businessRepository.create(businessData)
+
     return await this.businessRepository.save(business)
   }
 
