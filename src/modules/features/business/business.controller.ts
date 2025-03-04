@@ -49,7 +49,7 @@ export class BusinessController {
   async createBusinessBasicInfo(
     @Req() req: Request & { user: { id: string; businessName: string } },
     @Body() basicInfoData: BusinessBasicInfoDto,
-  ): Promise<Business> {
+  ): Promise<{ data: Business; message: string }> {
     try {
       const existingBusiness = await this.businessService.findByOwnerId(req.user.id)
 
@@ -100,7 +100,10 @@ export class BusinessController {
         registration_status: 'basic_info_completed',
       }
 
-      return await this.businessService.createBasicInfo(businessData)
+      return {
+        message: 'Business basic information created successfully',
+        data: await this.businessService.createBasicInfo(businessData),
+      }
     } catch (error) {
       console.log(error)
       if (error instanceof HttpException) {

@@ -6,7 +6,6 @@ import { InjectRepository } from '@nestjs/typeorm'
 
 import { Business } from '@features/business/entities/business.entity'
 import { PartnerReference } from '@global/entities/partner-reference.entity'
-import { PartnerEntityType, PartnerName } from '@global/enums/partner-reference.enum'
 
 import { CreateUserDto } from '../../dto/create-user.dto'
 import { UserEntity } from '../../entities/user.entity'
@@ -25,8 +24,6 @@ export class UserService {
     private readonly otpService: OTPService,
     @InjectRepository(Business)
     private businessRepository: Repository<Business>,
-    @InjectRepository(PartnerReference)
-    private partnerRepository: Repository<PartnerReference>,
   ) {}
 
   async isUserExists(email: string): Promise<UserEntity | null> {
@@ -43,7 +40,7 @@ export class UserService {
       firstName: userDto.firstName,
       lastName: userDto.lastName,
       passwordHash: await this.passwordService.generate(userDto.password),
-      businessName: userDto.businessName.toLowerCase(),
+      businessName: userDto.businessName,
       idCountry: userDto.country,
     }
 
@@ -51,8 +48,6 @@ export class UserService {
     newUser = await this.updateUser(newUser)
 
     const { otp, expiryTime } = await this.otpService.generateTimedOtp(newUser.email)
-
-    console.log('OTP_CODE', otp)
 
     this.sendUserOtp(newUser.email, otp, expiryTime)
     return await this.updateUser(newUser)
@@ -77,20 +72,9 @@ export class UserService {
   }
 
   public async getUserBusiness(user: UserEntity): Promise<Business | null> {
-    const partnerRef = await this.partnerRepository.findOne({
-      where: {
-        entity_id: user.id,
-        entity_type: PartnerEntityType.USER,
-        partner_name: PartnerName.GRAPH,
-      },
-    })
-
-    if (!partnerRef) {
-      return null
-    }
     return this.businessRepository.findOne({
       where: {
-        owner_id: partnerRef.partner_entity_id,
+        owner_id: user.id,
       },
     })
   }
