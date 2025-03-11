@@ -11,12 +11,14 @@ import {
   Post,
   Query,
 } from '@nestjs/common'
+import { ApiTags } from '@nestjs/swagger'
 
 import { BankAccountsService } from './bank_accounts.service'
 import { CreateBankAccountDto } from './dto/create_bank_account.dto'
 import { FindBankAccountsDto } from './dto/find_bank_accounts.dto'
 import { UpdateBankAccountDto } from './dto/update_bank_account.dto'
 
+@ApiTags('bank_accounts')
 @Controller('bank-accounts')
 export class BankAccountsController {
   private readonly logger = new Logger(BankAccountsController.name)
