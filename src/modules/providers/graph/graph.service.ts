@@ -8,12 +8,14 @@ import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 
+import { CreateBankAccountDto } from '@features/bank_account/dto/create_bank_account.dto'
 import { Business } from '@features/business/entities/business.entity'
 import { UserEntity } from '@features/user/entities/user.entity'
 
 import { PartnerReferenceService } from '../../../global/services/partner-reference/partner-reference.service'
 import { CreatePayoutDestinationDto } from './dto/create-payout-destination.dto'
 import { CreatePayoutDto } from './dto/create-payout.dto'
+import { FetchBankAccountsResponseDto } from './dto/fetch-bank-accounts.dto'
 import {
   FetchPayoutDestinationsResponseDto,
   PayoutDestinationDto,
@@ -224,6 +226,22 @@ export class GraphService {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
     const response = await this.httpService.axiosRef.get(`${baseUrl}/wallet_account`)
+
+    return response.data.data
+  }
+
+  async listBankAccounts(): Promise<FetchBankAccountsResponseDto> {
+    const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
+
+    const response = await this.httpService.axiosRef.get(`${baseUrl}/bank_account`)
+
+    return response.data.data
+  }
+
+  async createBankAccount(payout: CreateBankAccountDto): Promise<any> {
+    const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
+
+    const response = await this.httpService.axiosRef.post(`${baseUrl}/payout`, payout)
 
     return response.data.data
   }
