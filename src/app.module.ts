@@ -2,6 +2,7 @@ import { MiddlewareConsumer, Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { ThrottlerModule } from '@nestjs/throttler'
 
+import { BankAccountsModule } from '@features/bank_account/bank_accounts.module'
 import { BusinessModule } from '@features/business/business.module'
 import { DepositsModule } from '@features/deposits/deposits.module'
 import { UserModule } from '@features/user/user.module'
@@ -29,6 +30,7 @@ import { getConfig } from './services/app-config/configuration'
     HealthModule,
     GraphModule,
     DepositsModule,
+    BankAccountsModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60,

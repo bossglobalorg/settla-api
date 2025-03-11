@@ -3,11 +3,11 @@ import { IsBoolean, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-val
 export class CreateBankAccountDto {
   @IsString()
   @IsOptional()
-  business_id?: string // For business accounts
+  businessId?: string // For business accounts
 
   @IsString()
   @IsOptional()
-  person_id?: string // For personal accounts
+  personId?: string // For personal accounts
 
   @IsString()
   @IsNotEmpty()
@@ -19,11 +19,11 @@ export class CreateBankAccountDto {
 
   @IsBoolean()
   @IsOptional()
-  autosweep_enabled?: boolean = false
+  autosweepEnabled?: boolean = false
 
   @IsBoolean()
   @IsOptional()
-  whitelist_enabled?: boolean = false
+  whitelistEnabled?: boolean = false
 
   @IsObject()
   @IsOptional()
