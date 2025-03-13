@@ -89,12 +89,18 @@ export class UserService {
       <p>Best regards,<br>Your Team</p>
     `
 
-    await this.mailService.send({
-      to: email,
-      from: this.mailService.from(),
-      subject,
-      html: htmlContent,
-    })
+    console.log(htmlContent)
+
+    try {
+      await this.mailService.send({
+        to: email,
+        from: this.mailService.from(),
+        subject,
+        html: htmlContent,
+      })
+    } catch (error) {
+      console.error('Error sending OTP email:', error)
+    }
   }
 
   async verifyOtpAndGenerateToken(email: string, submittedOtp: string): Promise<string> {

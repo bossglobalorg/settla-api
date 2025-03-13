@@ -185,7 +185,13 @@ export class GraphService {
   async listPayoutDestinations(): Promise<FetchPayoutDestinationsResponseDto> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    const response = await this.httpService.axiosRef.get(`${baseUrl}/payout-destination`)
+    const response = await this.httpService.axiosRef.get(`${baseUrl}/payout-destination`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'X-Source': 'settla',
+      },
+    })
 
     return response.data.data
   }
@@ -193,7 +199,13 @@ export class GraphService {
   async getPayoutDestination(id: string): Promise<PayoutDestinationDto> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    const response = await this.httpService.axiosRef.get(`${baseUrl}/payout-destination/${id}`)
+    const response = await this.httpService.axiosRef.get(`${baseUrl}/payout-destination/${id}`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'X-Source': 'settla',
+      },
+    })
 
     return response.data.data
   }
@@ -201,7 +213,13 @@ export class GraphService {
   async createPayout(payout: CreatePayoutDto): Promise<any> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    const response = await this.httpService.axiosRef.post(`${baseUrl}/payout`, payout)
+    const response = await this.httpService.axiosRef.post(`${baseUrl}/payout`, payout, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'X-Source': 'settla',
+      },
+    })
 
     return response.data.data
   }
@@ -209,7 +227,13 @@ export class GraphService {
   async listPayouts(): Promise<any> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    const response = await this.httpService.axiosRef.get(`${baseUrl}/payout`)
+    const response = await this.httpService.axiosRef.get(`${baseUrl}/payout`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'X-Source': 'settla',
+      },
+    })
 
     return response.data.data
   }
@@ -217,7 +241,13 @@ export class GraphService {
   async getPayout(id: string): Promise<any> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    const response = await this.httpService.axiosRef.get(`${baseUrl}/payout/${id}`)
+    const response = await this.httpService.axiosRef.get(`${baseUrl}/payout/${id}`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'X-Source': 'settla',
+      },
+    })
 
     return response.data.data
   }
@@ -225,7 +255,13 @@ export class GraphService {
   async listWallets(): Promise<any> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    const response = await this.httpService.axiosRef.get(`${baseUrl}/wallet_account`)
+    const response = await this.httpService.axiosRef.get(`${baseUrl}/wallet_account`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'X-Source': 'settla',
+      },
+    })
 
     return response.data.data
   }
@@ -233,16 +269,38 @@ export class GraphService {
   async listBankAccounts(): Promise<FetchBankAccountsResponseDto> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    const response = await this.httpService.axiosRef.get(`${baseUrl}/bank_account`)
+    const response = await this.httpService.axiosRef.get(`${baseUrl}/bank_account`, {
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+        'X-Source': 'settla',
+      },
+    })
 
     return response.data.data
   }
 
-  async createBankAccount(payout: CreateBankAccountDto): Promise<any> {
+  async createBankAccount(payload: CreateBankAccountDto): Promise<any> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    const response = await this.httpService.axiosRef.post(`${baseUrl}/payout`, payout)
+    try {
+      const response = await this.httpService.axiosRef.post(`${baseUrl}/bank_account`, payload, {
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+          'X-Source': 'settla',
+        },
+      })
 
-    return response.data.data
+      return response.data.data
+    } catch (error) {
+      console.log(payload)
+
+      this.logger.error(
+        `Failed to create bank account with Graph for user`,
+        error.response?.data || error.message,
+      )
+      throw error
+    }
   }
 }
