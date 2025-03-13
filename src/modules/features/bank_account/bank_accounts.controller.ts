@@ -10,8 +10,12 @@ import {
   Patch,
   Post,
   Query,
+  Req,
+  UseGuards,
 } from '@nestjs/common'
 import { ApiTags } from '@nestjs/swagger'
+
+import { JwtAuthGuard } from '@features/user/guards/jwt-auth/jwt-auth.guard'
 
 import { BankAccountsService } from './bank_accounts.service'
 import { CreateBankAccountDto } from './dto/create_bank_account.dto'
@@ -20,15 +24,19 @@ import { UpdateBankAccountDto } from './dto/update_bank_account.dto'
 
 @ApiTags('bank_accounts')
 @Controller('bank-accounts')
+@UseGuards(JwtAuthGuard)
 export class BankAccountsController {
   private readonly logger = new Logger(BankAccountsController.name)
 
   constructor(private readonly bankAccountsService: BankAccountsService) {}
 
   @Post()
-  async create(@Body() createBankAccountDto: CreateBankAccountDto) {
+  async create(
+    @Body() createBankAccountDto: CreateBankAccountDto,
+    @Req() req: Request & { user: { id: string } },
+  ) {
     this.logger.log(`Creating new bank account`)
-    return this.bankAccountsService.createBankAccount(createBankAccountDto)
+    return this.bankAccountsService.createBankAccount(createBankAccountDto, req.user.id)
   }
 
   @Get()

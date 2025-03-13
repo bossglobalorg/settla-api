@@ -43,5 +43,6 @@ import { UserKycController } from './user.kyc.controller'
     PartnerReferenceService,
     CloudinaryService,
   ],
+  exports: [UserService],
 })
 export class UserModule {}

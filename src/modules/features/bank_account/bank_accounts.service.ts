@@ -4,6 +4,8 @@ import { Repository } from 'typeorm'
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
+import { UserService } from '@features/user/services/user/user.service'
+import { PartnerEntityType, PartnerName } from '@global/enums/partner-reference.enum'
 import { BankAccountResponseDto } from '@providers/graph/dto/create-bank-account-response.dto'
 
 import { CreateBankAccountDto } from './dto/create_bank_account.dto'
@@ -49,18 +51,33 @@ export class BankAccountsService {
     @InjectRepository(BankAccount)
     private readonly bankAccountRepository: Repository<BankAccount>,
     private readonly graphService: GraphService,
+    private readonly userService: UserService,
   ) {}
 
-  async createBankAccount(createBankAccountDto: CreateBankAccountDto): Promise<BankAccount> {
+  async createBankAccount(
+    createBankAccountDto: CreateBankAccountDto,
+    userId: string,
+  ): Promise<BankAccount> {
     try {
       this.logger.log(`Creating new bank account`)
 
-      const response = await this.graphService.createBankAccount(createBankAccountDto)
+      const entityType =
+        createBankAccountDto.accountType === 'user'
+          ? PartnerEntityType.USER
+          : PartnerEntityType.BUSINESS
 
-      // Map API response to your entity
+      const { partner_entity_id } = await this.userService.getUserEntityId(
+        userId,
+        PartnerName.GRAPH,
+        entityType,
+      )
+
+      const payload = this.mapRequestToPayload(createBankAccountDto, partner_entity_id)
+      console.log({ payload })
+      const response = await this.graphService.createBankAccount(payload)
+
       const bankAccountData = this.mapResponseToEntity(response, createBankAccountDto)
 
-      // Save to database
       return this.saveBankAccount(bankAccountData)
     } catch (error) {
       this.logger.error(`Error creating bank account: ${error.message}`, error.stack)
@@ -495,5 +512,25 @@ export class BankAccountsService {
       createdAt: new Date(response.created_at),
       updatedAt: new Date(response.updated_at),
     }
+  }
+
+  private mapRequestToPayload(
+    request: CreateBankAccountDto,
+    partnerEntityId: string,
+  ): Record<string, unknown> {
+    const payload: Record<string, unknown> = {
+      label: request.label,
+      currency: request.currency,
+      autosweep_enabled: request.autosweepEnabled,
+      whitelist_enabled: request.whitelistEnabled,
+    }
+
+    if (request.accountType === 'user') {
+      payload.personId = partnerEntityId
+    } else {
+      payload.businessId = partnerEntityId
+    }
+
+    return payload
   }
 }

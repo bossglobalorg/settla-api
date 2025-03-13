@@ -1,11 +1,12 @@
 import { MailService } from 'src/modules/providers/mail/mail.service'
 import { Repository } from 'typeorm'
 
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
+import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
 import { Business } from '@features/business/entities/business.entity'
 import { PartnerReference } from '@global/entities/partner-reference.entity'
+import { PartnerEntityType, PartnerName } from '@global/enums/partner-reference.enum'
 
 import { CreateUserDto } from '../../dto/create-user.dto'
 import { UserEntity } from '../../entities/user.entity'
@@ -24,6 +25,8 @@ export class UserService {
     private readonly otpService: OTPService,
     @InjectRepository(Business)
     private businessRepository: Repository<Business>,
+    @InjectRepository(PartnerReference)
+    private partnerReferenceRepository: Repository<PartnerReference>,
   ) {}
 
   async isUserExists(email: string): Promise<UserEntity | null> {
@@ -59,6 +62,38 @@ export class UserService {
 
   async checkUserPassword(user: UserEntity, requestPassword: string): Promise<boolean> {
     return this.passwordService.compare(requestPassword, user.passwordHash)
+  }
+
+  async getUserEntityId(
+    userId: string,
+    partnerName: PartnerName,
+    entityType: PartnerEntityType,
+  ): Promise<PartnerReference> {
+    try {
+      const partnerReference = await this.partnerReferenceRepository.findOne({
+        where: { entity_id: userId, partner_name: partnerName, entity_type: entityType },
+      })
+
+      if (!partnerReference) {
+        throw new HttpException(
+          {
+            message: 'Failed to fetch owner businesses',
+            errors: 'User entity not found',
+          },
+          HttpStatus.INTERNAL_SERVER_ERROR,
+        )
+      }
+
+      return partnerReference
+    } catch (error) {
+      throw new HttpException(
+        {
+          message: 'Failed to fetch owner businesses',
+          errors: [error.message],
+        },
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      )
+    }
   }
 
   public getUserToken(user: UserEntity): string {
@@ -106,7 +141,6 @@ export class UserService {
 
     try {
       // Test OTP flow to debug
-      const testResult = await this.otpService.testOtpFlow(email)
 
       // Verify the submitted OTP
       const isValid = await this.otpService.verifyTimedOtp(email, submittedOtp)

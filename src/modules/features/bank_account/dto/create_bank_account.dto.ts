@@ -1,4 +1,4 @@
-import { IsBoolean, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator'
+import { IsBoolean, IsEnum, IsNotEmpty, IsObject, IsOptional, IsString } from 'class-validator'
 
 export class CreateBankAccountDto {
   @IsString()
@@ -7,7 +7,11 @@ export class CreateBankAccountDto {
 
   @IsString()
   @IsOptional()
-  personId?: string // For personal accounts
+  personId?: string
+
+  @IsString()
+  @IsEnum(['user', 'business'])
+  accountType: string
 
   @IsString()
   @IsNotEmpty()

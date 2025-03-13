@@ -106,8 +106,6 @@ export class GraphService {
   async verifyUserKyc(user: UserEntity): Promise<any> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    console.log(user)
-
     const formattedData = {
       name_first: user.firstName,
       name_last: user.lastName,
@@ -238,11 +236,24 @@ export class GraphService {
     return response.data.data
   }
 
-  async createBankAccount(payout: CreateBankAccountDto): Promise<any> {
+  async createBankAccount(bankAccount: Record<string, unknown>): Promise<any> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
-
-    const response = await this.httpService.axiosRef.post(`${baseUrl}/payout`, payout)
-
-    return response.data.data
+    console.log({ bankAccount })
+    try {
+      const response = await this.httpService.axiosRef.post(
+        `${baseUrl}/bank_account`,
+        bankAccount,
+        {
+          headers: {
+            Authorization: `Bearer ${apiKey}`,
+          },
+        },
+      )
+      return response.data.data
+    } catch (error) {
+      throw new Error(
+        `Failed to create bank account: ${error.response?.data?.message || error.message}`,
+      )
+    }
   }
 }
