@@ -1,5 +1,6 @@
 import { PartnerEntityType, PartnerName } from 'src/global/enums/partner-reference.enum'
 import { PartnerReferenceService } from 'src/global/services/partner-reference/partner-reference.service'
+
 import {
   Body,
   Controller,
@@ -22,7 +23,9 @@ import {
   ValidationPipe,
 } from '@nestjs/common'
 import { FileFieldsInterceptor } from '@nestjs/platform-express'
+
 import { AllExceptionsFilter } from '@global/filters/http-exception.filter'
+
 import { JwtAuthGuard } from '../user/guards/jwt-auth/jwt-auth.guard'
 import { BusinessBasicInfoDto } from './dto/basic-business.dto'
 import { BusinessIdentificationDto } from './dto/business-identification.dto'
@@ -141,66 +144,6 @@ export class BusinessController {
       )
     }
   }
-
-  // @Post(':businessId/documents')
-  // @UseInterceptors(
-  //   FileFieldsInterceptor([
-  //     { name: 'business_registration', maxCount: 1 },
-  //     { name: 'proof_of_address', maxCount: 1 },
-  //   ]),
-  // )
-  // @UsePipes(ValidationPipe)
-  // async uploadBusinessDocuments(
-  //   @Param('businessId') businessId: string,
-  //   @UploadedFiles()
-  //   files: {
-  //     business_registration?: Express.Multer.File[]
-  //     proof_of_address?: Express.Multer.File[]
-  //   },
-  // ): Promise<Business> {
-  //   try {
-  //     if (!files.business_registration || !files.business_registration[0]) {
-  //       throw new HttpException(
-  //         {
-  //           message: 'Validation failed',
-  //           errors: ['Business registration document is required'],
-  //         },
-  //         HttpStatus.BAD_REQUEST,
-  //       )
-  //     }
-
-  //     const documents = {
-  //       business_registration_doc: '',
-  //       proof_of_address_doc: '',
-  //       registration_status: 'documents_completed',
-  //     }
-
-  //     // Upload business registration document
-  //     const registrationUpload = await this.cloudinaryService.uploadDocument(
-  //       files.business_registration[0],
-  //     )
-  //     documents.business_registration_doc = registrationUpload.secure_url
-
-  //     // Upload proof of address if provided
-  //     if (files.proof_of_address && files.proof_of_address[0]) {
-  //       const addressUpload = await this.cloudinaryService.uploadDocument(files.proof_of_address[0])
-  //       documents.proof_of_address_doc = addressUpload.secure_url
-  //     }
-
-  //     return await this.businessService.addDocuments(businessId, documents)
-  //   } catch (error) {
-  //     if (error instanceof HttpException) {
-  //       throw error
-  //     }
-  //     throw new HttpException(
-  //       {
-  //         message: 'Failed to upload business documents',
-  //         errors: [error.message],
-  //       },
-  //       HttpStatus.INTERNAL_SERVER_ERROR,
-  //     )
-  //   }
-  // }
 
   @Post(':businessId/documents')
   @UseInterceptors(

@@ -8,7 +8,6 @@ import { Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 
-import { CreateBankAccountDto } from '@features/bank_account/dto/create_bank_account.dto'
 import { Business } from '@features/business/entities/business.entity'
 import { UserEntity } from '@features/user/entities/user.entity'
 
@@ -66,8 +65,6 @@ export class GraphService {
       },
       proof_of_address: business.proof_of_address_doc || null,
     }
-
-    console.log({ formattedData, business })
 
     try {
       const response = await this.httpService.axiosRef.post(`${baseUrl}/business`, formattedData, {
