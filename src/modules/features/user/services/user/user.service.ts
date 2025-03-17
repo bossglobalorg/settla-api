@@ -77,7 +77,7 @@ export class UserService {
       if (!partnerReference) {
         throw new HttpException(
           {
-            message: 'Failed to fetch owner businesses',
+            message: 'Failed to fetch partner entity ID for this user',
             errors: 'User entity not found',
           },
           HttpStatus.INTERNAL_SERVER_ERROR,

@@ -46,8 +46,4 @@ export class PartnerReference {
 
   @UpdateDateColumn()
   updated_at: Date
-
-  @ManyToOne(() => UserEntity, (user) => user.partner_references)
-  @JoinColumn({ name: 'entity_id', referencedColumnName: 'id' })
-  user: UserEntity
 }

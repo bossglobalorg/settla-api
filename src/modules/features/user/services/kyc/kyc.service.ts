@@ -1,6 +1,6 @@
-import { Repository } from 'typeorm'
+import { Not, Repository } from 'typeorm'
 
-import { Injectable, NotFoundException } from '@nestjs/common'
+import { ConflictException, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
 import { BackgroundInfoDto } from '@features/user/dto/kyc/background-info.dto'
@@ -21,6 +21,17 @@ export class UserKycService {
 
   async savePersonalInfo(userId: string, data: PersonalInfoDto): Promise<UserEntity> {
     const user = await this.findUser(userId)
+
+    const existingUserWithPhone = await this.userRepository.findOne({
+      where: {
+        phone: data.phone,
+        id: Not(userId),
+      },
+    })
+
+    if (existingUserWithPhone) {
+      throw new ConflictException('Phone number is already in use by another user')
+    }
     Object.assign(user, data)
     user.kyc_step = 'personal_info'
     return await this.userRepository.save(user)
@@ -28,6 +39,27 @@ export class UserKycService {
 
   async saveIdentification(userId: string, data: IdentificationDto): Promise<UserEntity> {
     const user = await this.findUser(userId)
+    const existingUser = await this.userRepository.findOne({
+      where: [
+        {
+          bankIdNumber: data.bankIdNumber,
+          id: Not(userId),
+        },
+        {
+          idNumber: data.idNumber,
+          id: Not(userId),
+        },
+      ],
+    })
+
+    if (existingUser) {
+      if (existingUser.bankIdNumber === data.bankIdNumber) {
+        throw new ConflictException('Bank ID number is already in use by another user')
+      } else {
+        throw new ConflictException('ID number is already in use by another user')
+      }
+    }
+
     Object.assign(user, data)
     user.kyc_step = 'identification'
     return await this.userRepository.save(user)
@@ -53,7 +85,6 @@ export class UserKycService {
     user.kyc_step = 'documents'
 
     const updatedUser = await this.userRepository.save(user)
-
     if (this.isKycComplete(updatedUser)) {
       try {
         const verificationResult = await this.graphService.verifyUserKyc(updatedUser)
@@ -80,6 +111,6 @@ export class UserKycService {
   }
 
   private isKycComplete(user: UserEntity): boolean {
-    return user.documents && user.documents.length >= 1 // Adjust based on your requirements
+    return user.documents && user.documents.length >= 1 
   }
 }

@@ -10,7 +10,19 @@ import { UpdateBusinessDto } from '@features/business/dto/update-business.dto'
 import { Business } from '@features/business/entities/business.entity'
 import { PartnerReference } from '@global/entities/partner-reference.entity'
 import { PartnerEntityType } from '@global/enums/partner-reference.enum'
+import { CloudinaryService } from '@providers/cloudinary/cloudinary.service'
 import { GraphService } from '@providers/graph/graph.service'
+
+export interface BusinessDocumentFiles {
+  business_registration: Express.Multer.File[]
+  proof_of_address: Express.Multer.File[]
+}
+
+export interface BusinessDocuments {
+  business_registration_doc: string
+  proof_of_address_doc?: string
+  registration_status: string
+}
 
 @Injectable()
 export class BusinessService {
@@ -18,6 +30,7 @@ export class BusinessService {
     @InjectRepository(Business)
     private readonly businessRepository: Repository<Business>,
     private readonly graphService: GraphService,
+    private readonly cloudinaryService: CloudinaryService,
     @InjectRepository(PartnerReference)
     private readonly partnerReferenceRepository: Repository<PartnerReference>,
   ) {}
@@ -49,6 +62,66 @@ export class BusinessService {
     business.registration_status = 'identification_completed'
 
     return await this.businessRepository.save(business)
+  }
+
+  async processBusinessDocuments(
+    businessId: string,
+    files: BusinessDocumentFiles,
+  ): Promise<Business> {
+    try {
+      this.validateDocumentFiles(files)
+      const documentUrls = await this.uploadDocumentFiles(files)
+      return await this.addDocuments(businessId, documentUrls)
+    } catch (error) {
+      this.handleDocumentProcessingError(error)
+    }
+  }
+
+  private validateDocumentFiles(files: BusinessDocumentFiles): void {
+    if (!files.business_registration || !files.business_registration[0]) {
+      throw new HttpException(
+        {
+          message: 'Validation failed',
+          errors: ['Business registration document is required'],
+        },
+        HttpStatus.BAD_REQUEST,
+      )
+    }
+  }
+
+  private async uploadDocumentFiles(files: BusinessDocumentFiles): Promise<BusinessDocuments> {
+    const documents: BusinessDocuments = {
+      business_registration_doc: '',
+      proof_of_address_doc: '',
+      registration_status: 'documents_completed',
+    }
+
+    // Upload business registration document
+    const registrationUpload = await this.cloudinaryService.uploadDocument(
+      files.business_registration[0],
+    )
+    documents.business_registration_doc = registrationUpload.secure_url
+
+    // Upload proof of address if provided
+    if (files.proof_of_address && files.proof_of_address[0]) {
+      const addressUpload = await this.cloudinaryService.uploadDocument(files.proof_of_address[0])
+      documents.proof_of_address_doc = addressUpload.secure_url
+    }
+
+    return documents
+  }
+
+  private handleDocumentProcessingError(error: any): never {
+    if (error instanceof HttpException) {
+      throw error
+    }
+    throw new HttpException(
+      {
+        message: 'Failed to upload business documents',
+        errors: [error.message],
+      },
+      HttpStatus.INTERNAL_SERVER_ERROR,
+    )
   }
 
   async addDocuments(
