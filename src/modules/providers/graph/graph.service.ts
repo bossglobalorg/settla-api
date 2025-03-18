@@ -101,9 +101,18 @@ export class GraphService {
     }
   }
 
-  // src/global/services/graph/graph.service.ts
   async verifyUserKyc(user: UserEntity): Promise<any> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
+
+    const backgroundInformationSnakeCase = user.background_information
+      ? {
+          employment_status: user.background_information.employmentStatus,
+          occupation: user.background_information.occupation,
+          primary_purpose: user.background_information.primaryPurpose,
+          source_of_funds: user.background_information.sourceOfFunds,
+          expected_monthly: user.background_information.expectedMonthly,
+        }
+      : {}
 
     const formattedData = {
       name_first: user.firstName,
@@ -119,7 +128,7 @@ export class GraphService {
       bank_id_number: user.bankIdNumber,
       kyc_level: user.kycLevel || 'basic',
       address: user.address || {},
-      background_information: user.background_information || {},
+      background_information: backgroundInformationSnakeCase,
     }
 
     try {
