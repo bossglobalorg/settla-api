@@ -70,8 +70,23 @@ export class UserService {
     entityType: PartnerEntityType,
   ): Promise<PartnerReference> {
     try {
+      const userBusiness = await this.businessRepository.findOne({ where: { owner_id: userId } })
+
+      if (!userBusiness) {
+        throw new HttpException(
+          {
+            message: 'Failed to fetch user business',
+            errors: 'User business not found',
+          },
+          HttpStatus.NOT_FOUND,
+        )
+      }
+
+      const entityId =
+        entityType === PartnerEntityType.BUSINESS ? userBusiness.id || userId : userId
+
       const partnerReference = await this.partnerReferenceRepository.findOne({
-        where: { entity_id: userId, partner_name: partnerName, entity_type: entityType },
+        where: { entity_id: entityId, partner_name: partnerName, entity_type: entityType },
       })
 
       if (!partnerReference) {

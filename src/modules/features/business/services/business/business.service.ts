@@ -373,9 +373,6 @@ export class BusinessService {
     try {
       const business = await this.findOne(id)
 
-      // Implement document upload logic here
-      // You might want to use your CloudinaryService here
-
       return {
         message: 'Document uploaded successfully',
         businessId: business.id,

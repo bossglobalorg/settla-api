@@ -1,4 +1,3 @@
-// src/business/services/graph.service.ts
 import { PartnerEntityType, PartnerName } from 'src/global/enums/partner-reference.enum'
 import { GraphConfig } from 'src/services/app-config/configuration'
 import { Repository } from 'typeorm'
@@ -110,7 +109,7 @@ export class GraphService {
           occupation: user.background_information.occupation,
           primary_purpose: user.background_information.primaryPurpose,
           source_of_funds: user.background_information.sourceOfFunds,
-          expected_monthly: user.background_information.expectedMonthly,
+          expected_monthly_inflow: user.background_information.expectedMonthly,
         }
       : {}
 
@@ -289,6 +288,7 @@ export class GraphService {
   async createBankAccount(payload: Record<string, unknown>): Promise<any> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
+    console.log({ finalPayload: payload })
     try {
       const response = await this.httpService.axiosRef.post(`${baseUrl}/bank_account`, payload, {
         headers: {
