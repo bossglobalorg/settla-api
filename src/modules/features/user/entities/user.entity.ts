@@ -1,5 +1,6 @@
 import { Column, Entity, JoinColumn, OneToMany } from 'typeorm'
 
+import { BankAccount } from '@features/bank_account/entities/bank_account.entity'
 import { BaseEntity } from '@global/entities/base.entity'
 import { PartnerReference } from '@global/entities/partner-reference.entity'
 
@@ -124,4 +125,7 @@ export class UserEntity extends BaseEntity {
   @OneToMany(() => PartnerReference, (partnerRef) => partnerRef.entity_id)
   @JoinColumn({ name: 'id', referencedColumnName: 'entity_id' })
   partner_references: PartnerReference[]
+
+  @OneToMany(() => BankAccount, (bankAccount) => bankAccount.user)
+  bankAccounts: BankAccount[]
 }

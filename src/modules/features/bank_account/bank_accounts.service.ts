@@ -73,12 +73,9 @@ export class BankAccountsService {
       )
 
       const payload = this.mapRequestToPayload(createBankAccountDto, partner_entity_id)
-      console.log({ payload })
       const response = await this.graphService.createBankAccount(payload)
 
-      console.log({ response })
-
-      const bankAccountData = this.mapResponseToEntity(response, createBankAccountDto)
+      const bankAccountData = this.mapResponseToEntity(response, createBankAccountDto, userId)
 
       return this.saveBankAccount(bankAccountData)
     } catch (error) {
@@ -288,7 +285,7 @@ export class BankAccountsService {
         await this.resetOtherPrimaryAccounts(
           bankAccount.userId,
           bankAccount.businessId,
-          bankAccount.personId,
+          bankAccount.holderId,
         )
       }
 
@@ -317,7 +314,7 @@ export class BankAccountsService {
       await this.resetOtherPrimaryAccounts(
         bankAccount.userId,
         bankAccount.businessId,
-        bankAccount.personId,
+        bankAccount.holderId,
       )
 
       // Set this account as primary
@@ -440,7 +437,7 @@ export class BankAccountsService {
       }
 
       if (personId) {
-        results = results.filter((account) => account.personId === personId)
+        results = results.filter((account) => account.holderId === personId)
       }
 
       return results
@@ -490,6 +487,7 @@ export class BankAccountsService {
   private mapResponseToEntity(
     response: BankAccountResponseDto,
     requestDto: CreateBankAccountDto,
+    userId: string,
   ): Partial<BankAccount> {
     return {
       id: response.id,
@@ -502,8 +500,8 @@ export class BankAccountsService {
       status: response.status,
       routingNumber: response.routing_number,
       businessId: requestDto.businessId,
-      personId: requestDto.personId,
-      userId: requestDto.userId,
+      holderId: response.holder_id,
+      userId,
       label: response.label,
       whitelistEnabled: requestDto.whitelistEnabled,
       whitelist: requestDto.whitelist,

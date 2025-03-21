@@ -288,7 +288,6 @@ export class GraphService {
   async createBankAccount(payload: Record<string, unknown>): Promise<any> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    console.log({ finalPayload: payload })
     try {
       const response = await this.httpService.axiosRef.post(`${baseUrl}/bank_account`, payload, {
         headers: {

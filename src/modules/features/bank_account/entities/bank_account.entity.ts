@@ -2,10 +2,14 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   PrimaryColumn,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm'
+
+import { UserEntity } from '@features/user/entities/user.entity'
 
 @Entity('bank_accounts')
 export class BankAccount {
@@ -68,7 +72,7 @@ export class BankAccount {
   businessId: string
 
   @Column({ nullable: true })
-  personId: string
+  holderId: string
 
   @Column({ nullable: true })
   userId: string
@@ -93,4 +97,8 @@ export class BankAccount {
 
   @UpdateDateColumn()
   updatedAt: Date
+
+  @ManyToOne(() => UserEntity, (user) => user.bankAccounts)
+  @JoinColumn({ name: 'userId' })
+  user: UserEntity
 }
