@@ -1,2 +1,51 @@
-.idea
+# compiled output
+dist
+node_modules
+
+# Logs
+logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+
+# OS
 .DS_Store
+
+# Tests
+/coverage
+/.nyc_output
+
+# Editors
+/.VSCodeCounter
+/.vscode
+/.idea
+/.zed
+/.project
+/.classpath
+/.c9/
+/*.launch
+/.settings
+/*.sublime-workspace
+
+# Envs
+.env*
+*/**/.env*
+
+# Prisma
+# /prisma/**/migrations
+
+# Docs
+/documentation
+notes.txt
+
+# emails
+/.react-email
+
+# Sentry Config File
+.sentryclirc
+
+# Shell scripts
+./set-env.sh
