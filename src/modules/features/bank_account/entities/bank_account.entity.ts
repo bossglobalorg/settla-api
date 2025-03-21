@@ -12,16 +12,22 @@ export class BankAccount {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   accountNumber: string
 
   @Column({ nullable: true })
   accountName: string
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   bankName: string
 
-  @Column()
+  @Column({
+    nullable: true,
+  })
   bankCode: string
 
   @Column()

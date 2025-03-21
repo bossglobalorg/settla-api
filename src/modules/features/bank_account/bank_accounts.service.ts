@@ -76,6 +76,8 @@ export class BankAccountsService {
       console.log({ payload })
       const response = await this.graphService.createBankAccount(payload)
 
+      console.log({ response })
+
       const bankAccountData = this.mapResponseToEntity(response, createBankAccountDto)
 
       return this.saveBankAccount(bankAccountData)
@@ -526,9 +528,9 @@ export class BankAccountsService {
     }
 
     if (request.accountType === 'user') {
-      payload.personId = partnerEntityId
+      payload.person_id = partnerEntityId
     } else {
-      payload.businessId = partnerEntityId
+      payload.business_id = partnerEntityId
     }
 
     return payload
