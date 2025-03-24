@@ -122,7 +122,7 @@ export class BusinessController {
   async addBusinessIdentification(
     @Param('businessId') businessId: string,
     @Body() identificationData: BusinessIdentificationDto,
-  ): Promise<Business> {
+  ): Promise<{ data: Business; message: string }> {
     try {
       const formattedData = {
         ...identificationData,
@@ -130,7 +130,10 @@ export class BusinessController {
         registration_status: 'identification_completed',
       }
 
-      return await this.businessService.addIdentification(businessId, formattedData)
+      return {
+        message: 'Business identification information created successfully',
+        data: await this.businessService.addIdentification(businessId, formattedData),
+      }
     } catch (error) {
       if (error instanceof HttpException) {
         throw error
