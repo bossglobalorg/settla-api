@@ -222,12 +222,6 @@ export class BankAccountsService {
         },
       })
 
-      // If no bank accounts found for this user, fetch from Graph and save to database
-      if (bankAccounts.length === 0) {
-        this.logger.log(`No bank accounts found for user ${userId}, fetching from Graph`)
-        return this.fetchAndSaveBankAccounts(userId)
-      }
-
       return bankAccounts
     } catch (error) {
       this.logger.error(
@@ -384,7 +378,7 @@ export class BankAccountsService {
       // Fetch bank accounts from Graph - assume a method like this exists
       const graphBankAccounts = await this.graphService.listBankAccounts()
 
-      if (!graphBankAccounts || graphBankAccounts.data.length === 0) {
+      if (!graphBankAccounts || graphBankAccounts?.data?.length === 0) {
         this.logger.log('No bank accounts returned from Graph')
         return []
       }

@@ -282,7 +282,7 @@ export class GraphService {
       },
     })
 
-    return response.data.data
+    return response.data
   }
 
   async createBankAccount(payload: Record<string, unknown>): Promise<any> {

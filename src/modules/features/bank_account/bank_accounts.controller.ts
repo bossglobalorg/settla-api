@@ -39,13 +39,6 @@ export class BankAccountsController {
     return this.bankAccountsService.createBankAccount(createBankAccountDto, req.user.id)
   }
 
-  @Get()
-  async findAll(@Query() query: FindBankAccountsDto) {
-    this.logger.log(`Fetching bank accounts with filters: ${JSON.stringify(query)}`)
-
-    return this.bankAccountsService.findAll(query)
-  }
-
   @Get(':id')
   async findOne(@Param('id', ParseUUIDPipe) id: string) {
     this.logger.log(`Fetching bank account with ID: ${id}`)
@@ -59,11 +52,11 @@ export class BankAccountsController {
     return bankAccount
   }
 
-  @Get('user/:userId')
-  async findByUser(@Param('userId') userId: string) {
+  @Get()
+  async findAll(@Param('userId') userId: string, @Req() req: Request & { user: { id: string } }) {
     this.logger.log(`Fetching bank accounts for user: ${userId}`)
 
-    return this.bankAccountsService.findByUser(userId)
+    return this.bankAccountsService.findByUser(req.user.id)
   }
 
   @Get('business/:businessId')
