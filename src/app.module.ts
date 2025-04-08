@@ -6,6 +6,7 @@ import { BankAccountsModule } from '@features/bank_account/bank_accounts.module'
 import { BusinessModule } from '@features/business/business.module'
 import { DepositsModule } from '@features/deposits/deposits.module'
 import { UserModule } from '@features/user/user.module'
+import { WalletsModule } from '@features/wallets/wallets.module'
 
 import { DbModule } from './db/db.module'
 import { GlobalModule } from './global/global.module'
@@ -31,6 +32,7 @@ import { getConfig } from './services/app-config/configuration'
     GraphModule,
     DepositsModule,
     BankAccountsModule,
+    WalletsModule,
     ThrottlerModule.forRoot([
       {
         ttl: 60,
