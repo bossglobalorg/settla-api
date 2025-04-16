@@ -1,4 +1,3 @@
-import { GraphService } from 'src/modules/providers/graph/graph.service'
 import { Repository } from 'typeorm'
 
 import { Injectable, Logger, NotFoundException } from '@nestjs/common'
@@ -12,14 +11,9 @@ export class DepositsService {
   private readonly logger = new Logger(DepositsService.name)
 
   constructor(
-    private readonly graphService: GraphService,
     @InjectRepository(Deposit)
     private readonly depositRepository: Repository<Deposit>,
   ) {}
-
-  async createDeposit(deposit: any) {
-    // const user = await this.graphService.getUser(deposit.userId)
-  }
 
   async handleDepositWebhook(webhookData: DepositWebhookDto): Promise<void> {
     try {
@@ -50,25 +44,83 @@ export class DepositsService {
       newDeposit.transactionId = data.id
       newDeposit.depositId = data.deposit_id
       newDeposit.accountId = data.account_id
+      newDeposit.accountType = data.account_type
+      newDeposit.objectType = data.object_type
+      newDeposit.organisationId = data.organisation_id
       newDeposit.amount = data.amount
       newDeposit.balanceBefore = data.balance_before
       newDeposit.balanceAfter = data.balance_after
       newDeposit.currency = data.currency
+      newDeposit.currencySettlement = data.currency_settlement
       newDeposit.description = data.description
       newDeposit.status = data.status
       newDeposit.type = data.type
       newDeposit.kind = data.kind
-      newDeposit.linkedTransactionId = data.linked_transaction_id ?? ''
-      newDeposit.payoutId = data.payout_id ?? ''
-      newDeposit.transactionCreatedAt = new Date(data.created_at)
-      newDeposit.transactionUpdatedAt = new Date(data.updated_at)
+      newDeposit.customReference = data.custom_reference ?? null
+      newDeposit.linkedTransactionId = data.linked_transaction_id ?? null
+      newDeposit.payoutId = data.payout_id ?? null
+      newDeposit.chargeId = data.charge_id ?? null
+      newDeposit.conversionId = data.conversion_id ?? null
+      newDeposit.cardId = data.card_id ?? null
+      newDeposit.transactionCreatedAt = data.created_at ? new Date(data.created_at) : null
+      newDeposit.transactionUpdatedAt = data.updated_at ? new Date(data.updated_at) : null
+
+      // Bank Account data
+      if (data.bank_account) {
+        newDeposit.bankAccountId = data.bank_account.id
+        newDeposit.bankAccountName = data.bank_account.account_name
+        newDeposit.bankAccountNumber = data.bank_account.account_number
+        newDeposit.bankName = data.bank_account.bank_name
+        newDeposit.bankCode = data.bank_account.bank_code
+        newDeposit.bankType = data.bank_account.type
+        newDeposit.bankRoutingNumber = data.bank_account.routing_number ?? null
+        newDeposit.bankSwiftCode = data.bank_account.swift_code ?? null
+        newDeposit.bankIban = data.bank_account.iban ?? null
+        newDeposit.bankBalance = data.bank_account.balance
+        newDeposit.bankCurrency = data.bank_account.currency
+        newDeposit.bankCurrencySettlement = data.bank_account.currency_settlement
+        newDeposit.bankCreditPending = data.bank_account.credit_pending
+        newDeposit.bankDebitPending = data.bank_account.debit_pending
+        newDeposit.bankStatus = data.bank_account.status
+        newDeposit.bankHolderId = data.bank_account.holder_id
+        newDeposit.bankHolderType = data.bank_account.holder_type ?? null
+        newDeposit.bankCreatedAt = data.bank_account.created_at
+          ? new Date(data.bank_account.created_at)
+          : null
+        newDeposit.bankUpdatedAt = data.bank_account.updated_at
+          ? new Date(data.bank_account.updated_at)
+          : null
+
+        // Bank Address
+        if (data.bank_account.bank_address) {
+          newDeposit.bankAddressLine1 = data.bank_account.bank_address.line1
+          newDeposit.bankAddressLine2 = data.bank_account.bank_address.line2 ?? null
+          newDeposit.bankAddressCity = data.bank_account.bank_address.city
+          newDeposit.bankAddressState = data.bank_account.bank_address.state ?? null
+          newDeposit.bankAddressCountry = data.bank_account.bank_address.country
+          newDeposit.bankAddressPostalCode = data.bank_account.bank_address.postal_code
+        }
+
+        // Beneficiary Address
+        if (data.bank_account.beneficiary_address) {
+          newDeposit.beneficiaryAddressLine1 = data.bank_account.beneficiary_address.line1
+          newDeposit.beneficiaryAddressLine2 = data.bank_account.beneficiary_address.line2 ?? null
+          newDeposit.beneficiaryAddressCity = data.bank_account.beneficiary_address.city
+          newDeposit.beneficiaryAddressState = data.bank_account.beneficiary_address.state ?? null
+          newDeposit.beneficiaryAddressCountry = data.bank_account.beneficiary_address.country
+          newDeposit.beneficiaryAddressPostalCode =
+            data.bank_account.beneficiary_address.postal_code
+        }
+      }
 
       // Wallet account data
-      newDeposit.walletAccountId = data.wallet_account.id
-      newDeposit.walletCurrency = data.wallet_account.currency
-      newDeposit.walletBalance = data.wallet_account.balance
-      newDeposit.walletKind = data.wallet_account.kind
-      newDeposit.walletStatus = data.wallet_account.status
+      if (data.wallet_account) {
+        newDeposit.walletAccountId = data.wallet_account.id
+        newDeposit.walletCurrency = data.wallet_account.currency
+        newDeposit.walletBalance = data.wallet_account.balance
+        newDeposit.walletKind = data.wallet_account.kind
+        newDeposit.walletStatus = data.wallet_account.status
+      }
 
       // Deposit details
       if (data.deposit) {
@@ -83,13 +135,26 @@ export class DepositsService {
         newDeposit.depositSettlementType = data.deposit.settlement_type
         newDeposit.depositSettlementRate = data.deposit.settlement_rate
         newDeposit.depositCurrencySource = data.deposit.currency_source
-        newDeposit.depositCreatedAt = new Date(data.deposit.created_at)
-        newDeposit.depositUpdatedAt = new Date(data.deposit.updated_at)
+        newDeposit.depositCreatedAt = data.deposit.created_at
+          ? new Date(data.deposit.created_at)
+          : null
+        newDeposit.depositUpdatedAt = data.deposit.updated_at
+          ? new Date(data.deposit.updated_at)
+          : null
 
         // Payer details if available
         if (data.deposit.payer) {
-          newDeposit.depositNetwork = data.deposit.payer.network
-          newDeposit.depositChainHash = data.deposit.payer.chain_hash
+          newDeposit.payerAccountName = data.deposit.payer.account_name ?? null
+          newDeposit.payerAccountNumber = data.deposit.payer.account_number ?? null
+          newDeposit.payerBankCode = data.deposit.payer.bank_code ?? null
+          newDeposit.payerBankName = data.deposit.payer.bank_name ?? null
+          newDeposit.payerRoutingNumber = data.deposit.payer.routing_number ?? null
+          newDeposit.payerRoutingType = data.deposit.payer.routing_type ?? null
+          newDeposit.payerRoutingRail = data.deposit.payer.routing_rail ?? null
+          newDeposit.payerTraceNumber = data.deposit.payer.trace_number ?? null
+          newDeposit.payerSessionId = data.deposit.payer.session_id ?? null
+          newDeposit.depositNetwork = data.deposit.payer.network ?? null
+          newDeposit.depositChainHash = data.deposit.payer.chain_hash ?? null
         }
       }
 

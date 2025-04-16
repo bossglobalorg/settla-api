@@ -1,14 +1,4 @@
-import {
-  Column,
-  CreateDateColumn,
-  Entity,
-  JoinColumn,
-  ManyToOne,
-  PrimaryGeneratedColumn,
-  UpdateDateColumn,
-} from 'typeorm'
-
-import { UserEntity } from '@features/user/entities/user.entity'
+import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn, UpdateDateColumn } from 'typeorm'
 
 import { PartnerEntityType, PartnerName } from '../enums/partner-reference.enum'
 
@@ -17,33 +7,35 @@ export class PartnerReference {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @Column()
-  entity_id: string
+  @Column({ name: 'entity_id' })
+  entityId: string
 
   @Column({
+    name: 'entity_type',
     type: 'enum',
     enum: PartnerEntityType,
   })
-  entity_type: PartnerEntityType
+  entityType: PartnerEntityType
 
   @Column({
+    name: 'partner_name',
     type: 'enum',
     enum: PartnerName,
   })
-  partner_name: PartnerName
+  partnerName: PartnerName
 
-  @Column()
-  partner_entity_id: string
+  @Column({ name: 'partner_entity_id' })
+  partnerEntityId: string
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ name: 'metadata', type: 'jsonb', nullable: true })
   metadata: Record<string, any>
 
-  @Column({ nullable: true })
-  verification_status: string
+  @Column({ name: 'verification_status', nullable: true })
+  verificationStatus: string
 
-  @CreateDateColumn()
-  created_at: Date
+  @CreateDateColumn({ name: 'created_at' })
+  createdAt: Date
 
-  @UpdateDateColumn()
-  updated_at: Date
+  @UpdateDateColumn({ name: 'updated_at' })
+  updatedAt: Date
 }

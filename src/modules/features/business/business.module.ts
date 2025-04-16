@@ -3,7 +3,7 @@ import { Module } from '@nestjs/common'
 import { ConfigModule, ConfigService } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
-import { UserEntity } from '@features/user/entities/user.entity'
+import { User } from '@features/user/entities/user.entity'
 import { PartnerReference } from '@global/entities/partner-reference.entity'
 import { PartnerReferenceService } from '@global/services/partner-reference/partner-reference.service'
 import { CloudinaryService } from '@providers/cloudinary/cloudinary.service'
@@ -15,7 +15,7 @@ import { BusinessService } from './services/business/business.service'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Business, PartnerReference, Business, UserEntity]),
+    TypeOrmModule.forFeature([Business, PartnerReference, Business, User]),
     HttpModule,
     ConfigModule.forRoot({
       isGlobal: true,

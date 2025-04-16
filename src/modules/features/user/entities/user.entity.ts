@@ -7,10 +7,24 @@ import { PartnerReference } from '@global/entities/partner-reference.entity'
 import { Business } from '../../business/entities/business.entity'
 import { DocumentDto } from '../dto/kyc/document.dto'
 
+interface UserAddress {
+  line1: string
+  line2?: string | null
+  city: string
+  state: string
+  country: string
+  postalCode: string
+}
+
+interface BackgroundInformation {
+  // Add specific fields based on your needs
+  [key: string]: any
+}
+
 @Entity({
   name: 'users',
 })
-export class UserEntity extends BaseEntity {
+export class User extends BaseEntity {
   @Column({
     name: 'first_name',
   })
@@ -50,81 +64,108 @@ export class UserEntity extends BaseEntity {
   @Column({ nullable: true })
   phone: string
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ name: 'dob', type: 'date', nullable: true })
   dob: Date
 
   @Column({
+    name: 'id_level',
     type: 'enum',
     enum: ['primary', 'secondary'],
     nullable: true,
-    name: 'id_level',
   })
   idLevel: string
 
   @Column({
+    name: 'id_type',
     type: 'enum',
     enum: ['passport', 'national_id', 'drivers_license', 'nin'],
     nullable: true,
-    name: 'id_type',
   })
   idType: string
 
-  @Column({ nullable: true, name: 'id_number' })
+  @Column({ name: 'id_number', nullable: true })
   idNumber: string
 
   @Column({
+    name: 'id_country',
     type: 'enum',
     enum: ['US', 'NG'],
     nullable: true,
-    name: 'id_country',
   })
   idCountry: string
 
-  @Column({ nullable: true, name: 'bank_id_number' })
+  @Column({ name: 'bank_id_number', nullable: true })
   bankIdNumber: string
 
   @Column({
+    name: 'kyc_level',
     type: 'enum',
     enum: ['basic', 'preliminary'],
     nullable: true,
-    name: 'kyc_level',
   })
   kycLevel: string
 
-  @Column({ type: 'jsonb', nullable: true })
-  address: Record<string, any>
+  @Column({
+    name: 'address',
+    type: 'jsonb',
+    nullable: true,
+    transformer: {
+      to: (value: UserAddress): any => ({
+        line1: value.line1,
+        line2: value.line2,
+        city: value.city,
+        state: value.state,
+        country: value.country,
+        postal_code: value.postalCode,
+      }),
+      from: (value: any): UserAddress => ({
+        line1: value.line1,
+        line2: value.line2,
+        city: value.city,
+        state: value.state,
+        country: value.country,
+        postalCode: value.postal_code,
+      }),
+    },
+  })
+  address: UserAddress
 
-  @Column({ type: 'jsonb', nullable: true })
-  background_information: Record<string, any>
+  @Column({
+    name: 'background_information',
+    type: 'jsonb',
+    nullable: true,
+  })
+  backgroundInformation: BackgroundInformation
 
   @Column({ nullable: true })
   token: string
 
-  @Column({ nullable: true })
-  kyc_status: string
+  @Column({ name: 'kyc_status', nullable: true })
+  kycStatus: string
 
-  @Column({ type: 'jsonb', nullable: true })
+  @Column({ name: 'documents', type: 'jsonb', nullable: true })
   documents: DocumentDto[]
 
   @Column({
+    name: 'kyc_step',
     type: 'enum',
     enum: ['draft', 'personal_info', 'identification', 'background', 'documents', 'completed'],
     default: 'draft',
   })
-  kyc_step: string
+  kycStep: string
 
-  @Column({ nullable: true })
-  proof_of_address: string
+  @Column({ name: 'proof_of_address', nullable: true })
+  proofOfAddress: string
 
-  @Column({ type: 'jsonb', nullable: true })
-  kyc_response: any
+  @Column({ name: 'kyc_response', type: 'jsonb', nullable: true })
+  kycResponse: Record<string, any>
 
-  @OneToMany(() => Business, (business) => business.owner_id)
+  @OneToMany(() => Business, (business) => business.ownerId)
   businesses: Business[]
 
-  @OneToMany(() => PartnerReference, (partnerRef) => partnerRef.entity_id)
-  @JoinColumn({ name: 'id', referencedColumnName: 'entity_id' })
-  partner_references: PartnerReference[]
+  @OneToMany(() => PartnerReference, (partnerRef) => partnerRef.entityId)
+  @JoinColumn({ name: 'id', referencedColumnName: 'entityId' })
+  partnerReferences: PartnerReference[]
 
   @OneToMany(() => BankAccount, (bankAccount) => bankAccount.user)
   bankAccounts: BankAccount[]

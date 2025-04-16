@@ -66,13 +66,13 @@ export class BankAccountsService {
           ? PartnerEntityType.USER
           : PartnerEntityType.BUSINESS
 
-      const { partner_entity_id } = await this.userService.getUserEntityId(
+      const { partnerEntityId } = await this.userService.getUserEntityId(
         userId,
         PartnerName.GRAPH,
         entityType,
       )
 
-      const payload = this.mapRequestToPayload(createBankAccountDto, partner_entity_id)
+      const payload = this.mapRequestToPayload(createBankAccountDto, partnerEntityId)
       const response = await this.graphService.createBankAccount(payload)
 
       const bankAccountData = this.mapResponseToEntity(response, createBankAccountDto, userId)

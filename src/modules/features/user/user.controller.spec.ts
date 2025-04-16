@@ -1,18 +1,19 @@
-import { Test, TestingModule } from '@nestjs/testing';
-import { UserController } from './user.controller';
-import { AuthService } from './services/auth/auth.service';
-import { UserService } from './services/user/user.service';
-import { PasswordService } from './services/password/password.service';
-import { ConfigService } from '@nestjs/config';
-import { JwtService } from './services/jwt/jwt.service';
-import { getRepositoryToken } from '@nestjs/typeorm';
-import { UserEntity } from './entities/user.entity';
-import { mockUserEntity } from './entities/__fixtures__/user-entity.fixture';
+import { ConfigService } from '@nestjs/config'
+import { Test, TestingModule } from '@nestjs/testing'
+import { getRepositoryToken } from '@nestjs/typeorm'
+
+import { mockUserEntity } from './entities/__fixtures__/user-entity.fixture'
+import { User } from './entities/user.entity'
+import { AuthService } from './services/auth/auth.service'
+import { JwtService } from './services/jwt/jwt.service'
+import { PasswordService } from './services/password/password.service'
+import { UserService } from './services/user/user.service'
+import { UserController } from './user.controller'
 
 describe('UserController', () => {
-  let controller: UserController;
-  let authService: AuthService;
-  let userService: UserService;
+  let controller: UserController
+  let authService: AuthService
+  let userService: UserService
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -24,7 +25,7 @@ describe('UserController', () => {
         ConfigService,
         JwtService,
         {
-          provide: getRepositoryToken(UserEntity),
+          provide: getRepositoryToken(User),
           useValue: {},
         },
         {
@@ -32,16 +33,16 @@ describe('UserController', () => {
           useValue: jest.fn(),
         },
       ],
-    }).compile();
+    }).compile()
 
-    controller = module.get<UserController>(UserController);
-    authService = module.get<AuthService>(AuthService);
-    userService = module.get<UserService>(UserService);
-  });
+    controller = module.get<UserController>(UserController)
+    authService = module.get<AuthService>(AuthService)
+    userService = module.get<UserService>(UserService)
+  })
 
   it('should be defined', () => {
-    expect(controller).toBeDefined();
-  });
+    expect(controller).toBeDefined()
+  })
 
   describe('register method', () => {
     it('should register user', async () => {
@@ -59,7 +60,7 @@ describe('UserController', () => {
         kyc_response: '',
         kyc_status: 'verified',
         businesses: [],
-      });
+      })
 
       expect(
         await controller.register({
@@ -75,13 +76,13 @@ describe('UserController', () => {
           id: 0,
           token: 'token',
         },
-      });
-    });
-  });
+      })
+    })
+  })
 
   describe('login method', () => {
     it('should login user', async () => {
-      jest.spyOn(authService, 'login').mockResolvedValue('mock-token');
+      jest.spyOn(authService, 'login').mockResolvedValue('mock-token')
 
       expect(
         await controller.login({
@@ -91,21 +92,19 @@ describe('UserController', () => {
       ).toStrictEqual({
         message: 'Login successful',
         token: 'mock-token',
-      });
-    });
-  });
+      })
+    })
+  })
 
   describe('getUsers method', () => {
     it('should retrieve all users', async () => {
-      const userServiceSpy = jest
-        .spyOn(userService, 'getAll')
-        .mockResolvedValue([mockUserEntity]);
+      const userServiceSpy = jest.spyOn(userService, 'getAll').mockResolvedValue([mockUserEntity])
 
       expect(await controller.getUsers()).toStrictEqual({
         message: 'Users retrieved successfully',
         users: [mockUserEntity],
-      });
-      expect(userServiceSpy).toHaveBeenCalledTimes(1);
-    });
-  });
-});
+      })
+      expect(userServiceSpy).toHaveBeenCalledTimes(1)
+    })
+  })
+})

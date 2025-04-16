@@ -1,6 +1,6 @@
-import { UserEntity } from '../user.entity';
+import { User } from '../user.entity'
 
-export const mockUserEntity: UserEntity = {
+export const mockUserEntity: User = {
   id: 'adfs9-3j2k-3j2k-3j2k',
   email: 'email',
   lastName: 'lName',
@@ -18,16 +18,23 @@ export const mockUserEntity: UserEntity = {
   idCountry: 'null',
   bankIdNumber: 'null',
   kycLevel: 'basic',
-  address: {},
-  background_information: {},
+  address: {
+    line1: 'line1',
+    line2: 'line2',
+    city: 'city',
+    state: 'state',
+    country: 'country',
+    postalCode: 'postalCode',
+  },
+  backgroundInformation: {},
   documents: [],
   dateCreated: new Date(),
   dateUpdated: new Date(),
-  kyc_status: 'verified',
-  kyc_response: null,
+  kycStatus: 'verified',
+  kycResponse: {},
   businesses: [],
-  proof_of_address: 'sss',
-  kyc_step: '',
-  partner_references: [],
-  bankAccounts: []
-};
+  proofOfAddress: 'sss',
+  kycStep: '',
+  partnerReferences: [],
+  bankAccounts: [],
+}

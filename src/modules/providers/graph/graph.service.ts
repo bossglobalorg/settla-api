@@ -8,7 +8,7 @@ import { ConfigService } from '@nestjs/config'
 import { InjectRepository } from '@nestjs/typeorm'
 
 import { Business } from '@features/business/entities/business.entity'
-import { UserEntity } from '@features/user/entities/user.entity'
+import { User } from '@features/user/entities/user.entity'
 
 import { PartnerReferenceService } from '../../../global/services/partner-reference/partner-reference.service'
 import { CreatePayoutDestinationDto } from './dto/create-payout-destination.dto'
@@ -34,35 +34,35 @@ export class GraphService {
     @InjectRepository(Business)
     private readonly businessRepository: Repository<Business>,
     private readonly partnerReferenceService: PartnerReferenceService,
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
   ) {}
 
   async completeKyb(business: Business): Promise<void> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
     const formattedData = {
-      owner_id: business.partner_entity_id,
+      owner_id: business.partnerEntityId,
       name: business.name,
-      business_type: this.formatBusinessType(business.business_type as BusinessType),
+      business_type: this.formatBusinessType(business.businessType as BusinessType),
       industry: business.industry,
-      id_type: business.id_type,
-      id_number: business.id_number,
-      id_country: business.id_country,
-      id_upload: business.business_registration_doc,
-      id_level: business.id_level,
+      id_type: business.idType,
+      id_number: business.idNumber,
+      id_country: business.idCountry,
+      id_upload: business.businessRegistrationDoc,
+      id_level: business.idLevel,
       dof: business.dof,
-      contact_phone: business.contact_phone,
-      contact_email: business.contact_email,
+      contact_phone: business.contactPhone,
+      contact_email: business.contactEmail,
       address: {
         line1: business.address.line1,
         line2: business.address.line2 || null,
         city: business.address.city,
         state: business.address.state,
         country: business.address.country,
-        postal_code: business.address.postal_code,
+        postal_code: business.address.postalCode,
       },
-      proof_of_address: business.proof_of_address_doc || null,
+      proof_of_address: business.proofOfAddressDoc || null,
     }
 
     try {
@@ -74,8 +74,8 @@ export class GraphService {
         },
       })
 
-      business.kyb_status = response.data.data.kyb_status
-      business.kyb_response = response.data.data
+      business.kybStatus = response.data.data.kyb_status
+      business.kybResponse = response.data.data
 
       await this.businessRepository.save(business)
 
@@ -100,16 +100,16 @@ export class GraphService {
     }
   }
 
-  async verifyUserKyc(user: UserEntity): Promise<any> {
+  async verifyUserKyc(user: User): Promise<any> {
     const { baseUrl, apiKey } = this.configService.get<GraphConfig>('graph') as GraphConfig
 
-    const backgroundInformationSnakeCase = user.background_information
+    const backgroundInformationSnakeCase = user.backgroundInformation
       ? {
-          employment_status: user.background_information.employmentStatus,
-          occupation: user.background_information.occupation,
-          primary_purpose: user.background_information.primaryPurpose,
-          source_of_funds: user.background_information.sourceOfFunds,
-          expected_monthly_inflow: user.background_information.expectedMonthly,
+          employment_status: user.backgroundInformation.employmentStatus,
+          occupation: user.backgroundInformation.occupation,
+          primary_purpose: user.backgroundInformation.primaryPurpose,
+          source_of_funds: user.backgroundInformation.sourceOfFunds,
+          expected_monthly_inflow: user.backgroundInformation.expectedMonthly,
         }
       : {}
 
@@ -139,8 +139,8 @@ export class GraphService {
         },
       })
 
-      user.kyc_status = response.data.data.kyc_status
-      user.kyc_response = response.data.data
+      user.kycStatus = response.data.data.kyc_status
+      user.kycResponse = response.data.data
 
       await this.userRepository.save(user)
 

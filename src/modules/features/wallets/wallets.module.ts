@@ -5,7 +5,7 @@ import { Module } from '@nestjs/common'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { Business } from '@features/business/entities/business.entity'
-import { UserEntity } from '@features/user/entities/user.entity'
+import { User } from '@features/user/entities/user.entity'
 import { PartnerReferenceService } from '@global/services/partner-reference/partner-reference.service'
 import { GraphModule } from '@providers/graph/graph.module'
 import { GraphUtils } from '@providers/graph/graph.utils'
@@ -15,11 +15,7 @@ import { WalletsController } from './wallets.controller'
 import { WalletsService } from './wallets.service'
 
 @Module({
-  imports: [
-    TypeOrmModule.forFeature([WalletAccount, Business, UserEntity]),
-    HttpModule,
-    GraphModule,
-  ],
+  imports: [TypeOrmModule.forFeature([WalletAccount, Business, User]), HttpModule, GraphModule],
   controllers: [WalletsController],
   providers: [WalletsService],
   exports: [WalletsService],

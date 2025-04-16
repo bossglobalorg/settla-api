@@ -8,8 +8,6 @@ import { BusinessIdentificationDto } from '@features/business/dto/business-ident
 import { CreateBusinessDto } from '@features/business/dto/create-business.dto'
 import { UpdateBusinessDto } from '@features/business/dto/update-business.dto'
 import { Business } from '@features/business/entities/business.entity'
-import { PartnerReference } from '@global/entities/partner-reference.entity'
-import { PartnerEntityType } from '@global/enums/partner-reference.enum'
 import { CloudinaryService } from '@providers/cloudinary/cloudinary.service'
 import { GraphService } from '@providers/graph/graph.service'
 
@@ -31,13 +29,10 @@ export class BusinessService {
     private readonly businessRepository: Repository<Business>,
     private readonly graphService: GraphService,
     private readonly cloudinaryService: CloudinaryService,
-    @InjectRepository(PartnerReference)
-    private readonly partnerReferenceRepository: Repository<PartnerReference>,
   ) {}
 
   async createBasicInfo(businessData: Partial<CreateBusinessDto>): Promise<Business> {
     const business = this.businessRepository.create(businessData)
-
     return await this.businessRepository.save(business)
   }
 
@@ -54,12 +49,12 @@ export class BusinessService {
     }
 
     // Update individual identification fields
-    business.id_type = identificationData.id_type
-    business.id_number = identificationData.id_number
-    business.id_country = identificationData.id_country
-    business.id_level = identificationData.id_level
+    business.idType = identificationData.id_type
+    business.idNumber = identificationData.id_number
+    business.idCountry = identificationData.id_country
+    business.idLevel = identificationData.id_level
     business.dof = identificationData.dof
-    business.registration_status = 'identification_completed'
+    business.registrationStatus = 'identification_completed'
 
     return await this.businessRepository.save(business)
   }
@@ -142,15 +137,17 @@ export class BusinessService {
     }
 
     // Update document fields
-    business.business_registration_doc = documents.business_registration_doc
+    business.businessRegistrationDoc = documents.business_registration_doc
+
     if (documents.proof_of_address_doc) {
-      business.proof_of_address_doc = documents.proof_of_address_doc
+      business.proofOfAddressDoc = documents.proof_of_address_doc
     }
-    business.registration_status = documents.registration_status
+
+    business.registrationStatus = documents.registration_status
 
     const updatedBusiness = await this.businessRepository.save(business)
 
-    if (business.registration_status === 'documents_completed') {
+    if (business.registrationStatus === 'documents_completed') {
       await this.graphService.completeKyb(updatedBusiness)
     }
 
@@ -236,7 +233,7 @@ export class BusinessService {
   async findByOwnerId(userId: string): Promise<Business[]> {
     try {
       const businesses = await this.businessRepository.find({
-        where: { owner_id: userId },
+        where: { ownerId: userId },
         order: { dateCreated: 'DESC' },
       })
 
@@ -318,7 +315,7 @@ export class BusinessService {
     try {
       const business = await this.findOne(id)
 
-      if (business.kyb_status === 'VERIFIED') {
+      if (business.kybStatus === 'VERIFIED') {
         throw new HttpException(
           {
             message: 'Business already verified',
@@ -329,7 +326,7 @@ export class BusinessService {
       }
 
       // Implement your KYB verification logic here
-      business.kyb_status = 'PENDING'
+      business.kybStatus = 'PENDING'
       return await this.businessRepository.save(business)
     } catch (error) {
       if (error instanceof HttpException) {
@@ -351,7 +348,7 @@ export class BusinessService {
       const business = await this.findOne(id)
       return {
         businessId: business.id,
-        status: business.kyb_status,
+        status: business.kybStatus,
         updatedAt: business.dateUpdated,
       }
     } catch (error) {
