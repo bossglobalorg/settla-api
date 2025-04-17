@@ -1,7 +1,7 @@
 import { IsEnum, IsOptional, IsString } from 'class-validator'
 import { IsNotEmpty } from 'class-validator'
 
-import { PayoutType } from '../entities/payout-destination.entity'
+import { PayoutDestinationType, PayoutType } from '../entities/payout-destination.entity'
 
 export class CreatePayoutDestinationDto {
   @IsString()
@@ -15,9 +15,9 @@ export class CreatePayoutDestinationDto {
   @IsEnum(PayoutType)
   type: PayoutType
 
-  @IsEnum(['bank_account', 'wallet_address'])
+  @IsEnum(PayoutDestinationType)
   @IsOptional()
-  destinationType: string
+  destinationType: PayoutDestinationType
 
   @IsEnum(['personal', 'business'])
   @IsOptional()

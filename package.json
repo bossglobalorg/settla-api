@@ -25,6 +25,7 @@
     "migrations:new": "npm run typeorm migration:generate -- -d ./type-orm.config.ts -p",
     "migrations:up": "npm run typeorm migration:run -- -d ./type-orm.config.ts",
     "migrations:revert": "npm run typeorm migration:revert -- -d ./type-orm.config.ts",
+    "migrations:reset": "while npm run migrations:revert; do :; done",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
