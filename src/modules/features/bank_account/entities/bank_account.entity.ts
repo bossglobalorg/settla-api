@@ -61,6 +61,9 @@ export class BankAccount {
   @Column({ type: 'json', nullable: true })
   whitelist: object
 
+  @Column({ nullable: true })
+  balance: number
+
   // Autosweep functionality
   @Column({ default: false })
   autosweepEnabled: boolean

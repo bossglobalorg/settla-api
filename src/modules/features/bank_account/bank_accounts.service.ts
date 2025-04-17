@@ -500,6 +500,8 @@ export class BankAccountsService {
       whitelistEnabled: requestDto.whitelistEnabled,
       whitelist: requestDto.whitelist,
       autosweepEnabled: requestDto.autosweepEnabled,
+      balance: response.balance,
+      metadata: response,
       isPrimary: requestDto.isPrimary || false,
       isVerified: false,
       isDeleted: response.is_deleted || false,
