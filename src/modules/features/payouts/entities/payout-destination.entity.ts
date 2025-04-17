@@ -28,6 +28,16 @@ export enum PayoutType {
   STABLECOIN = 'stablecoin',
 }
 
+export enum PayoutDestinationType {
+  BANK_ACCOUNT = 'bank_account',
+  WALLET_ADDRESS = 'wallet_address',
+}
+
+export enum PayoutAccountType {
+  PERSONAL = 'personal',
+  BUSINESS = 'business',
+}
+
 @Entity('payout_destinations')
 export class PayoutDestination extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
@@ -50,34 +60,42 @@ export class PayoutDestination extends BaseEntity {
   })
   type: PayoutType
 
-  @Column({ name: 'destination_type', nullable: true })
-  destinationType: string | null
+  @Column({
+    type: 'varchar',
+    name: 'destination_type',
+    nullable: true,
+  })
+  destinationType: PayoutDestinationType | null
 
-  @Column({ name: 'account_type', nullable: true })
+  @Column({
+    type: 'varchar',
+    name: 'account_type',
+    nullable: true,
+  })
   accountType: string | null
 
-  @Column({ name: 'wire_type', nullable: true })
+  @Column({ name: 'wire_type', nullable: true, type: 'varchar' })
   wireType: string | null
 
-  @Column({ name: 'bank_code', nullable: true })
+  @Column({ name: 'bank_code', nullable: true, type: 'varchar' })
   bankCode: string | null
 
-  @Column({ name: 'bank_name', nullable: true })
+  @Column({ name: 'bank_name', nullable: true, type: 'varchar' })
   bankName: string | null
 
-  @Column({ name: 'account_number', nullable: true })
+  @Column({ name: 'account_number', nullable: true, type: 'varchar' })
   accountNumber: string | null
 
-  @Column({ name: 'routing_number', nullable: true })
+  @Column({ name: 'routing_number', nullable: true, type: 'varchar' })
   routingNumber: string | null
 
-  @Column({ name: 'routing_type', nullable: true })
+  @Column({ name: 'routing_type', nullable: true, type: 'varchar' })
   routingType: string | null
 
-  @Column({ name: 'account_name', nullable: true })
+  @Column({ name: 'account_name', nullable: true, type: 'varchar' })
   accountName: string | null
 
-  @Column({ name: 'beneficiary_name', nullable: true })
+  @Column({ name: 'beneficiary_name', nullable: true, type: 'varchar' })
   beneficiaryName: string | null
 
   @Column({
