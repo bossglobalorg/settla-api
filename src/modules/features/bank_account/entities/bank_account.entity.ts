@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm'
 
-import { UserEntity } from '@features/user/entities/user.entity'
+import { User } from '@features/user/entities/user.entity'
 
 @Entity('bank_accounts')
 export class BankAccount {
@@ -98,7 +98,7 @@ export class BankAccount {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @ManyToOne(() => UserEntity, (user) => user.bankAccounts)
+  @ManyToOne(() => User, (user) => user.bankAccounts)
   @JoinColumn({ name: 'userId' })
-  user: UserEntity
+  user: User
 }

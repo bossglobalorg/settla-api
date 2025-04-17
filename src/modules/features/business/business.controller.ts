@@ -80,13 +80,13 @@ export class BusinessController {
       }
 
       const businessData = {
-        owner_id: partnerReference.entity_id,
-        partner_entity_id: partnerReference.partner_entity_id,
+        ownerId: partnerReference.entityId,
+        partnerEntityId: partnerReference.partnerEntityId,
         name: req.user.businessName,
-        business_type: basicInfoData.business_type,
+        businessType: basicInfoData.business_type,
         industry: basicInfoData.industry,
-        contact_phone: basicInfoData.contact_phone,
-        contact_email: basicInfoData.contact_email,
+        contactPhone: basicInfoData.contact_phone,
+        contactEmail: basicInfoData.contact_email,
         address: {
           line1: basicInfoData.line1,
           line2: basicInfoData.line2,
@@ -95,7 +95,7 @@ export class BusinessController {
           country: basicInfoData.country,
           postal_code: basicInfoData.postal_code,
         },
-        registration_status: 'basic_info_completed',
+        registrationStatus: 'basic_info_completed',
       }
 
       return {

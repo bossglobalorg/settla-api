@@ -9,17 +9,17 @@ import { IdentificationDto } from '@features/user/dto/kyc/identification.dto'
 import { PersonalInfoDto } from '@features/user/dto/kyc/personal-info.dto'
 import { GraphService } from '@providers/graph/graph.service'
 
-import { UserEntity } from '../../entities/user.entity'
+import { User } from '../../entities/user.entity'
 
 @Injectable()
 export class UserKycService {
   constructor(
-    @InjectRepository(UserEntity)
-    private readonly userRepository: Repository<UserEntity>,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
     private readonly graphService: GraphService,
   ) {}
 
-  async savePersonalInfo(userId: string, data: PersonalInfoDto): Promise<UserEntity> {
+  async savePersonalInfo(userId: string, data: PersonalInfoDto): Promise<User> {
     const user = await this.findUser(userId)
 
     const existingUserWithPhone = await this.userRepository.findOne({
@@ -33,11 +33,11 @@ export class UserKycService {
       throw new ConflictException('Phone number is already in use by another user')
     }
     Object.assign(user, data)
-    user.kyc_step = 'personal_info'
+    user.kycStep = 'personal_info'
     return await this.userRepository.save(user)
   }
 
-  async saveIdentification(userId: string, data: IdentificationDto): Promise<UserEntity> {
+  async saveIdentification(userId: string, data: IdentificationDto): Promise<User> {
     const user = await this.findUser(userId)
     const existingUser = await this.userRepository.findOne({
       where: [
@@ -61,20 +61,20 @@ export class UserKycService {
     }
 
     Object.assign(user, data)
-    user.kyc_step = 'identification'
+    user.kycStep = 'identification'
     return await this.userRepository.save(user)
   }
 
-  async saveBackgroundInfo(userId: string, data: BackgroundInfoDto): Promise<UserEntity> {
+  async saveBackgroundInfo(userId: string, data: BackgroundInfoDto): Promise<User> {
     const user = await this.findUser(userId)
     Object.assign(user, {
       background_information: data,
     })
-    user.kyc_step = 'background'
+    user.kycStep = 'background'
     return await this.userRepository.save(user)
   }
 
-  async addDocument(userId: string, document: DocumentDto): Promise<UserEntity> {
+  async addDocument(userId: string, document: DocumentDto): Promise<User> {
     const user = await this.findUser(userId)
 
     if (!user.documents) {
@@ -82,15 +82,15 @@ export class UserKycService {
     }
 
     user.documents.push(document)
-    user.kyc_step = 'documents'
+    user.kycStep = 'documents'
 
     const updatedUser = await this.userRepository.save(user)
     if (this.isKycComplete(updatedUser)) {
       try {
         const verificationResult = await this.graphService.verifyUserKyc(updatedUser)
         if (verificationResult?.kyc_status === 'verified') {
-          user.kyc_status = 'completed'
-          user.kyc_step = 'completed'
+          user.kycStatus = 'completed'
+          user.kycStep = 'completed'
           return await this.userRepository.save(user)
         }
 
@@ -102,7 +102,7 @@ export class UserKycService {
     return updatedUser
   }
 
-  private async findUser(userId: string): Promise<UserEntity> {
+  private async findUser(userId: string): Promise<User> {
     const user = await this.userRepository.findOne({ where: { id: userId } })
     if (!user) {
       throw new NotFoundException('User not found')
@@ -110,7 +110,7 @@ export class UserKycService {
     return user
   }
 
-  private isKycComplete(user: UserEntity): boolean {
-    return user.documents && user.documents.length >= 1 
+  private isKycComplete(user: User): boolean {
+    return user.documents && user.documents.length >= 1
   }
 }

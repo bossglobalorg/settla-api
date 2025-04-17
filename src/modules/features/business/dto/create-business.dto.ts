@@ -1,34 +1,35 @@
+import { Type } from 'class-transformer'
 import {
-  IsNotEmpty,
-  IsString,
+  IsEmail,
   IsEnum,
+  IsISO8601,
+  IsNotEmpty,
   IsObject,
   IsOptional,
-  IsEmail,
   IsPhoneNumber,
-  ValidateNested,
-  IsISO8601,
+  IsString,
   ValidateIf,
-} from 'class-validator';
-import { Type } from 'class-transformer';
-import { BusinessBasicInfoDto } from './basic-business.dto';
-import { BusinessDocumentsDto } from './business-document.dto';
-import { BusinessIdentificationDto } from './business-identification.dto';
+  ValidateNested,
+} from 'class-validator'
+
+import { BusinessBasicInfoDto } from './basic-business.dto'
+import { BusinessDocumentsDto } from './business-document.dto'
+import { BusinessIdentificationDto } from './business-identification.dto'
 
 export class CreateBusinessDto {
   @IsString()
   @IsNotEmpty()
-  owner_id: string;
+  ownerId: string
 
   @ValidateNested()
   @Type(() => BusinessBasicInfoDto)
-  basic_info: BusinessBasicInfoDto;
+  basicInfo: BusinessBasicInfoDto
 
   @ValidateNested()
   @Type(() => BusinessIdentificationDto)
-  identification: BusinessIdentificationDto;
+  identification: BusinessIdentificationDto
 
   @ValidateNested()
   @Type(() => BusinessDocumentsDto)
-  documents: BusinessDocumentsDto;
+  documents: BusinessDocumentsDto
 }
