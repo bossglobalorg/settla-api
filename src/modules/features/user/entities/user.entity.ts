@@ -17,8 +17,11 @@ interface UserAddress {
 }
 
 interface BackgroundInformation {
-  // Add specific fields based on your needs
-  [key: string]: any
+  occupation: string
+  primaryPurpose: string
+  sourceOfFunds: string
+  expectedMonthly: string
+  employmentStatus: string
 }
 
 @Entity({
@@ -110,22 +113,30 @@ export class User extends BaseEntity {
     type: 'jsonb',
     nullable: true,
     transformer: {
-      to: (value: UserAddress): any => ({
-        line1: value.line1,
-        line2: value.line2,
-        city: value.city,
-        state: value.state,
-        country: value.country,
-        postal_code: value.postalCode,
-      }),
-      from: (value: any): UserAddress => ({
-        line1: value.line1,
-        line2: value.line2,
-        city: value.city,
-        state: value.state,
-        country: value.country,
-        postalCode: value.postal_code,
-      }),
+      to: (value: UserAddress | null | undefined): any => {
+        if (!value) return null
+
+        return {
+          line1: value.line1,
+          line2: value.line2,
+          city: value.city,
+          state: value.state,
+          country: value.country,
+          postal_code: value.postalCode,
+        }
+      },
+      from: (value: any): UserAddress | null => {
+        if (!value) return null
+
+        return {
+          line1: value.line1,
+          line2: value.line2,
+          city: value.city,
+          state: value.state,
+          country: value.country,
+          postalCode: value.postal_code,
+        }
+      },
     },
   })
   address: UserAddress
@@ -143,7 +154,31 @@ export class User extends BaseEntity {
   @Column({ name: 'kyc_status', nullable: true })
   kycStatus: string
 
-  @Column({ name: 'documents', type: 'jsonb', nullable: true })
+  @Column({
+    name: 'documents',
+    type: 'jsonb',
+    nullable: true,
+    transformer: {
+      to: (docs: DocumentDto[] | null): any => {
+        if (!docs) return null
+        return docs.map((doc) => ({
+          type: doc.type,
+          issueDate: doc.issueDate,
+          expiryDate: doc.expiryDate,
+          documentUrl: doc.documentUrl,
+        }))
+      },
+      from: (docs: any[] | null): DocumentDto[] | null => {
+        if (!docs) return null
+        return docs.map((doc) => ({
+          type: doc.type,
+          issueDate: doc.issue_date,
+          expiryDate: doc.expiry_date,
+          documentUrl: doc.document_url,
+        }))
+      },
+    },
+  })
   documents: DocumentDto[]
 
   @Column({
