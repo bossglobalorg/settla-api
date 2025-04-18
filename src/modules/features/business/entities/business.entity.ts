@@ -54,7 +54,6 @@ export class Business extends BaseEntity {
     nullable: true,
     transformer: {
       to: (value: BusinessAddress | null | undefined): any => {
-        // Add null check here
         if (!value) return null
 
         return {
@@ -82,7 +81,6 @@ export class Business extends BaseEntity {
   })
   address: BusinessAddress
 
-  // Identification Information Section
   @Column({
     name: 'id_type',
     type: 'enum',
@@ -113,14 +111,12 @@ export class Business extends BaseEntity {
   @Column({ name: 'dof', type: 'date', nullable: true })
   dof: Date
 
-  // Document Section
   @Column({ name: 'business_registration_doc', nullable: true })
   businessRegistrationDoc: string
 
   @Column({ name: 'proof_of_address_doc', nullable: true })
   proofOfAddressDoc: string
 
-  // Status Tracking
   @Column({
     name: 'registration_status',
     type: 'enum',
