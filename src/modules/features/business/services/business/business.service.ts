@@ -4,10 +4,14 @@ import { Not, Repository } from 'typeorm'
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
+import { BusinessBasicInfoDto } from '@features/business/dto/basic-business.dto'
 import { BusinessIdentificationDto } from '@features/business/dto/business-identification.dto'
 import { CreateBusinessDto } from '@features/business/dto/create-business.dto'
 import { UpdateBusinessDto } from '@features/business/dto/update-business.dto'
 import { Business } from '@features/business/entities/business.entity'
+import { User } from '@features/user/entities/user.entity'
+import { PartnerEntityType, PartnerName } from '@global/enums/partner-reference.enum'
+import { PartnerReferenceService } from '@global/services/partner-reference/partner-reference.service'
 import { CloudinaryService } from '@providers/cloudinary/cloudinary.service'
 import { GraphService } from '@providers/graph/graph.service'
 
@@ -29,11 +33,68 @@ export class BusinessService {
     private readonly businessRepository: Repository<Business>,
     private readonly graphService: GraphService,
     private readonly cloudinaryService: CloudinaryService,
+    private readonly partnerService: PartnerReferenceService,
   ) {}
 
   async createBasicInfo(businessData: Partial<CreateBusinessDto>): Promise<Business> {
     const business = this.businessRepository.create(businessData)
     return await this.businessRepository.save(business)
+  }
+
+  async createBusinessWithBasicInfo(
+    user: { id: string; businessName: string },
+    basicInfoData: BusinessBasicInfoDto,
+  ): Promise<{ data: Business; message: string }> {
+    const existingBusiness = await this.findByOwnerId(user.id)
+    if (existingBusiness.length) {
+      throw new HttpException(
+        {
+          message: 'Business already exists for this user',
+          errors: ['A business has already been created for this user'],
+        },
+        HttpStatus.CONFLICT,
+      )
+    }
+
+    const partnerReference = await this.partnerService.findReference(
+      user.id,
+      PartnerEntityType.USER,
+      PartnerName.GRAPH,
+    )
+
+    if (!partnerReference) {
+      throw new HttpException(
+        {
+          message: 'Identity verification required',
+          errors: [
+            'Your account requires KYC verification. Please complete the verification process to access this feature.',
+          ],
+        },
+        HttpStatus.NOT_FOUND,
+      )
+    }
+
+    const businessData = {
+      ownerId: partnerReference.entityId,
+      partnerEntityId: partnerReference.partnerEntityId,
+      name: user.businessName,
+      businessType: basicInfoData.businessType,
+      industry: basicInfoData.industry,
+      contactPhone: basicInfoData.contactPhone,
+      contactEmail: basicInfoData.contactEmail,
+      address: {
+        line1: basicInfoData.line1,
+        line2: basicInfoData.line2,
+        city: basicInfoData.city,
+        state: basicInfoData.state,
+        country: basicInfoData.country,
+        postalCode: basicInfoData.postalCode,
+      },
+      registrationStatus: 'basic_info_completed',
+    }
+
+    const savedBusiness = await this.createBasicInfo(businessData)
+    return { data: savedBusiness, message: 'Business basic information created successfully' }
   }
 
   async addIdentification(
