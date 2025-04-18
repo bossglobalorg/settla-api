@@ -54,16 +54,11 @@ export class GraphService {
       dof: business.dof,
       contact_phone: business.contactPhone,
       contact_email: business.contactEmail,
-      address: {
-        line1: business.address.line1,
-        line2: business.address.line2 || null,
-        city: business.address.city,
-        state: business.address.state,
-        country: business.address.country,
-        postal_code: business.address.postalCode,
-      },
+      address: this.graphUtils.formatAddress(business.address) || {},
       proof_of_address: business.proofOfAddressDoc || null,
     }
+
+    console.log({ formattedData })
 
     try {
       const response = await this.httpService.axiosRef.post(`${baseUrl}/business`, formattedData, {
@@ -126,9 +121,11 @@ export class GraphService {
       id_country: user.idCountry,
       bank_id_number: user.bankIdNumber,
       kyc_level: user.kycLevel || 'basic',
-      address: user.address || {},
+      address: this.graphUtils.formatAddress(user.address) || {},
       background_information: backgroundInformationSnakeCase,
     }
+
+    console.log({ formattedData })
 
     try {
       const response = await this.httpService.axiosRef.post(`${baseUrl}/person`, formattedData, {
