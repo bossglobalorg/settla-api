@@ -65,7 +65,7 @@ export class UserKycController {
     const uploadedUrl = await this.cloudinaryService.uploadDocument(file)
     const document: DocumentDto = {
       ...documentInfo,
-      document_url: uploadedUrl.secure_url,
+      documentUrl: uploadedUrl.secure_url,
     }
     return await this.userKycService.addDocument(req.user.id, document)
   }
