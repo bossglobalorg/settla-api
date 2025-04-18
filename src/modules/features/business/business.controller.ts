@@ -51,29 +51,7 @@ export class BusinessController {
     @Param('businessId') businessId: string,
     @Body() identificationData: BusinessIdentificationDto,
   ): Promise<{ data: Business; message: string }> {
-    try {
-      const formattedData = {
-        ...identificationData,
-        dof: new Date(identificationData.dof),
-        registration_status: 'identification_completed',
-      }
-
-      return {
-        message: 'Business identification information created successfully',
-        data: await this.businessService.addIdentification(businessId, formattedData),
-      }
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error
-      }
-      throw new HttpException(
-        {
-          message: 'Failed to add business identification',
-          errors: [error.message],
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      )
-    }
+    return await this.businessService.updateBusinessIdentification(businessId, identificationData)
   }
 
   @Post(':businessId/documents')
