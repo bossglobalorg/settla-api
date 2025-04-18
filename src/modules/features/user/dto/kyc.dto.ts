@@ -35,7 +35,7 @@ export class AddressDto {
 
   @IsString()
   @IsOptional()
-  postal_code: string;
+  postalCode: string;
 }
 
 export class BackgroundInformationDto {

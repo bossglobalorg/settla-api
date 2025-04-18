@@ -22,7 +22,10 @@ export class DepositsController {
 
   @Post('webhook')
   async handleDepositWebhook(@Body() webhookData: DepositWebhookDto) {
-    this.logger.log(`Received deposit webhook`)
+    this.logger.log({
+      message: 'Received deposit webhook',
+      webhookData,
+    })
     return this.depositsService.handleDepositWebhook(webhookData)
   }
 

@@ -4,12 +4,14 @@ import { Not, Repository } from 'typeorm'
 import { HttpException, HttpStatus, Injectable, NotFoundException } from '@nestjs/common'
 import { InjectRepository } from '@nestjs/typeorm'
 
+import { BusinessBasicInfoDto } from '@features/business/dto/basic-business.dto'
 import { BusinessIdentificationDto } from '@features/business/dto/business-identification.dto'
 import { CreateBusinessDto } from '@features/business/dto/create-business.dto'
 import { UpdateBusinessDto } from '@features/business/dto/update-business.dto'
 import { Business } from '@features/business/entities/business.entity'
-import { PartnerReference } from '@global/entities/partner-reference.entity'
-import { PartnerEntityType } from '@global/enums/partner-reference.enum'
+import { User } from '@features/user/entities/user.entity'
+import { PartnerEntityType, PartnerName } from '@global/enums/partner-reference.enum'
+import { PartnerReferenceService } from '@global/services/partner-reference/partner-reference.service'
 import { CloudinaryService } from '@providers/cloudinary/cloudinary.service'
 import { GraphService } from '@providers/graph/graph.service'
 
@@ -31,14 +33,68 @@ export class BusinessService {
     private readonly businessRepository: Repository<Business>,
     private readonly graphService: GraphService,
     private readonly cloudinaryService: CloudinaryService,
-    @InjectRepository(PartnerReference)
-    private readonly partnerReferenceRepository: Repository<PartnerReference>,
+    private readonly partnerService: PartnerReferenceService,
   ) {}
 
   async createBasicInfo(businessData: Partial<CreateBusinessDto>): Promise<Business> {
     const business = this.businessRepository.create(businessData)
-
     return await this.businessRepository.save(business)
+  }
+
+  async createBusinessWithBasicInfo(
+    user: { id: string; businessName: string },
+    basicInfoData: BusinessBasicInfoDto,
+  ): Promise<{ data: Business; message: string }> {
+    const existingBusiness = await this.findByOwnerId(user.id)
+    if (existingBusiness.length) {
+      throw new HttpException(
+        {
+          message: 'Business already exists for this user',
+          errors: ['A business has already been created for this user'],
+        },
+        HttpStatus.CONFLICT,
+      )
+    }
+
+    const partnerReference = await this.partnerService.findReference(
+      user.id,
+      PartnerEntityType.USER,
+      PartnerName.GRAPH,
+    )
+
+    if (!partnerReference) {
+      throw new HttpException(
+        {
+          message: 'Identity verification required',
+          errors: [
+            'Your account requires KYC verification. Please complete the verification process to access this feature.',
+          ],
+        },
+        HttpStatus.NOT_FOUND,
+      )
+    }
+
+    const businessData = {
+      ownerId: partnerReference.entityId,
+      partnerEntityId: partnerReference.partnerEntityId,
+      name: user.businessName,
+      businessType: basicInfoData.businessType,
+      industry: basicInfoData.industry,
+      contactPhone: basicInfoData.contactPhone,
+      contactEmail: basicInfoData.contactEmail,
+      address: {
+        line1: basicInfoData.line1,
+        line2: basicInfoData.line2,
+        city: basicInfoData.city,
+        state: basicInfoData.state,
+        country: basicInfoData.country,
+        postalCode: basicInfoData.postalCode,
+      },
+      registrationStatus: 'basic_info_completed',
+    }
+
+    const savedBusiness = await this.createBasicInfo(businessData)
+    return { data: savedBusiness, message: 'Business basic information created successfully' }
   }
 
   async addIdentification(
@@ -53,15 +109,29 @@ export class BusinessService {
       throw new NotFoundException('Business not found')
     }
 
-    // Update individual identification fields
-    business.id_type = identificationData.id_type
-    business.id_number = identificationData.id_number
-    business.id_country = identificationData.id_country
-    business.id_level = identificationData.id_level
+    business.idType = identificationData.idType
+    business.idNumber = identificationData.idNumber
+    business.idCountry = identificationData.idCountry
+    business.idLevel = identificationData.idLevel
     business.dof = identificationData.dof
-    business.registration_status = 'identification_completed'
+    business.registrationStatus = 'identification_completed'
 
     return await this.businessRepository.save(business)
+  }
+
+  async updateBusinessIdentification(
+    businessId: string,
+    identificationData: BusinessIdentificationDto,
+  ): Promise<{ data: Business; message: string }> {
+    const formattedData = {
+      ...identificationData,
+      dof: new Date(identificationData.dof),
+    }
+
+    return {
+      message: 'Business identification information created successfully',
+      data: await this.addIdentification(businessId, formattedData),
+    }
   }
 
   async processBusinessDocuments(
@@ -142,15 +212,17 @@ export class BusinessService {
     }
 
     // Update document fields
-    business.business_registration_doc = documents.business_registration_doc
+    business.businessRegistrationDoc = documents.business_registration_doc
+
     if (documents.proof_of_address_doc) {
-      business.proof_of_address_doc = documents.proof_of_address_doc
+      business.proofOfAddressDoc = documents.proof_of_address_doc
     }
-    business.registration_status = documents.registration_status
+
+    business.registrationStatus = documents.registration_status
 
     const updatedBusiness = await this.businessRepository.save(business)
 
-    if (business.registration_status === 'documents_completed') {
+    if (business.registrationStatus === 'documents_completed') {
       await this.graphService.completeKyb(updatedBusiness)
     }
 
@@ -236,7 +308,7 @@ export class BusinessService {
   async findByOwnerId(userId: string): Promise<Business[]> {
     try {
       const businesses = await this.businessRepository.find({
-        where: { owner_id: userId },
+        where: { ownerId: userId },
         order: { dateCreated: 'DESC' },
       })
 
@@ -318,7 +390,7 @@ export class BusinessService {
     try {
       const business = await this.findOne(id)
 
-      if (business.kyb_status === 'VERIFIED') {
+      if (business.kybStatus === 'VERIFIED') {
         throw new HttpException(
           {
             message: 'Business already verified',
@@ -329,7 +401,7 @@ export class BusinessService {
       }
 
       // Implement your KYB verification logic here
-      business.kyb_status = 'PENDING'
+      business.kybStatus = 'PENDING'
       return await this.businessRepository.save(business)
     } catch (error) {
       if (error instanceof HttpException) {
@@ -351,7 +423,7 @@ export class BusinessService {
       const business = await this.findOne(id)
       return {
         businessId: business.id,
-        status: business.kyb_status,
+        status: business.kybStatus,
         updatedAt: business.dateUpdated,
       }
     } catch (error) {

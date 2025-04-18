@@ -1,29 +1,39 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
 
-import { UserEntity } from '@features/user/entities/user.entity'
+import { User } from '@features/user/entities/user.entity'
 import { BaseEntity } from '@global/entities/base.entity'
+
+interface BusinessAddress {
+  line1: string
+  line2?: string | null
+  city: string
+  state: string
+  country: string
+  postalCode: string
+}
 
 @Entity('businesses')
 export class Business extends BaseEntity {
   @PrimaryGeneratedColumn('uuid')
   id: string
 
-  @Column()
-  owner_id: string
+  @Column({ name: 'owner_id' })
+  ownerId: string
 
-  @Column()
-  partner_entity_id: string
+  @Column({ name: 'partner_entity_id' })
+  partnerEntityId: string
 
   // Basic Information Section
   @Column({ nullable: true })
   name: string
 
   @Column({
+    name: 'business_type',
     type: 'enum',
     enum: ['soleProprietor', 'singleMemberLLC', 'limitedLiabilityCompany'],
     nullable: true,
   })
-  business_type: string
+  businessType: string
 
   @Column({
     type: 'enum',
@@ -32,59 +42,83 @@ export class Business extends BaseEntity {
   })
   industry: string
 
-  @Column({ nullable: true })
-  contact_phone: string
+  @Column({ name: 'contact_phone', nullable: true })
+  contactPhone: string
 
-  @Column({ nullable: true })
-  contact_email: string
+  @Column({ name: 'contact_email', nullable: true })
+  contactEmail: string
 
-  @Column({ type: 'jsonb', nullable: true })
-  address: {
-    line1: string
-    line2?: string
-    city: string
-    state: string
-    country: string
-    postal_code: string
-  }
-
-  // Identification Information Section
   @Column({
+    name: 'address',
+    type: 'jsonb',
+    nullable: true,
+    transformer: {
+      to: (value: BusinessAddress | null | undefined): any => {
+        if (!value) return null
+
+        return {
+          line1: value.line1,
+          line2: value.line2,
+          city: value.city,
+          state: value.state,
+          country: value.country,
+          postal_code: value.postalCode,
+        }
+      },
+      from: (value: any): BusinessAddress | null => {
+        if (!value) return null
+
+        return {
+          line1: value.line1,
+          line2: value.line2,
+          city: value.city,
+          state: value.state,
+          country: value.country,
+          postalCode: value.postal_code,
+        }
+      },
+    },
+  })
+  address: BusinessAddress
+
+  @Column({
+    name: 'id_type',
     type: 'enum',
     enum: ['ein', 'cac'],
     nullable: true,
   })
-  id_type: string
+  idType: string
 
-  @Column({ nullable: true })
-  id_number: string
+  @Column({ name: 'id_number', nullable: true })
+  idNumber: string
 
   @Column({
+    name: 'id_country',
     type: 'enum',
     enum: ['US', 'NG'],
     nullable: true,
   })
-  id_country: string
+  idCountry: string
 
   @Column({
+    name: 'id_level',
     type: 'enum',
     enum: ['primary', 'secondary'],
     nullable: true,
   })
-  id_level: string
+  idLevel: string
 
-  @Column({ type: 'date', nullable: true })
+  @Column({ name: 'dof', type: 'date', nullable: true })
   dof: Date
 
-  // Document Section
-  @Column({ nullable: true })
-  business_registration_doc: string
+  @Column({ name: 'business_registration_doc', nullable: true })
+  businessRegistrationDoc: string
 
-  @Column({ nullable: true })
-  proof_of_address_doc: string
+  @Column({ name: 'proof_of_address_doc', nullable: true })
+  proofOfAddressDoc: string
 
-  // Status Tracking
   @Column({
+    name: 'registration_status',
     type: 'enum',
     enum: [
       'draft',
@@ -95,15 +129,15 @@ export class Business extends BaseEntity {
     ],
     default: 'draft',
   })
-  registration_status: string
+  registrationStatus: string
 
-  @Column({ nullable: true })
-  kyb_status: string
+  @Column({ name: 'kyb_status', nullable: true })
+  kybStatus: string
 
-  @Column({ type: 'jsonb', nullable: true })
-  kyb_response: any
+  @Column({ name: 'kyb_response', type: 'jsonb', nullable: true })
+  kybResponse: Record<string, any>
 
-  @ManyToOne(() => UserEntity)
+  @ManyToOne(() => User)
   @JoinColumn({ name: 'owner_id' })
-  owner: UserEntity
+  owner: User
 }

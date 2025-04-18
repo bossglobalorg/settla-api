@@ -1,7 +1,14 @@
-import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm'
+import {
+  BaseEntity,
+  Column,
+  CreateDateColumn,
+  Entity,
+  PrimaryColumn,
+  UpdateDateColumn,
+} from 'typeorm'
 
 @Entity('wallet_accounts')
-export class WalletAccount {
+export class WalletAccount extends BaseEntity {
   @PrimaryColumn()
   id: string
 

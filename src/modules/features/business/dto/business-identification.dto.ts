@@ -6,23 +6,23 @@ export class BusinessIdentificationDto {
   @IsEnum(['ein', 'cac'], {
     message: 'Invalid ID type selected',
   })
-  id_type: string;
+  idType: string;
 
   @IsString()
   @IsNotEmpty({ message: 'ID number is required' })
-  id_number: string;
+  idNumber: string;
 
   @IsString()
   @IsEnum(['US', 'NG'], {
     message: 'Invalid country selected',
   })
-  id_country: string;
+  idCountry: string;
 
   @IsString()
   @IsEnum(['primary', 'secondary'], {
     message: 'Invalid ID level selected',
   })
-  id_level: string;
+  idLevel: string;
 
   @Transform(({ value }) => {
     if (value) {

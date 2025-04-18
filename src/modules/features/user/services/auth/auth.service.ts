@@ -1,15 +1,18 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
-import { CreateUserDto } from '../../dto/create-user.dto'
-import { UserService } from '../user/user.service'
-import { LoginDto } from '../../dto/login.dto'
-import { UserEntity } from '../../entities/user.entity'
+
 import { Business } from '@features/business/entities/business.entity'
+import { SafeUserResponseDto } from '@features/user/dto/safe-user-response.dto'
+
+import { CreateUserDto } from '../../dto/create-user.dto'
+import { LoginDto } from '../../dto/login.dto'
+import { User } from '../../entities/user.entity'
+import { UserService } from '../user/user.service'
 
 @Injectable()
 export class AuthService {
   constructor(private readonly userService: UserService) {}
 
-  async register(userDto: CreateUserDto): Promise<UserEntity> {
+  async register(userDto: CreateUserDto): Promise<User> {
     // check if user exists and send custom error message
     if (await this.userService.isUserExists(userDto.email)) {
       throw new HttpException('User already exists', HttpStatus.BAD_REQUEST)
@@ -20,7 +23,7 @@ export class AuthService {
 
   async login(loginRequest: LoginDto): Promise<{
     token: string
-    user: UserEntity
+    user: SafeUserResponseDto
     business: Business | null
   } | void> {
     const { email, password } = loginRequest
@@ -39,8 +42,9 @@ export class AuthService {
       const business = await this.userService.getUserBusiness(user)
       user.token = token
       await this.userService.updateUser(user)
+      const userResponse = new SafeUserResponseDto(user)
 
-      return { token, user, business }
+      return { token, user: userResponse, business }
     }
 
     this.failLogin('Incorrect password')

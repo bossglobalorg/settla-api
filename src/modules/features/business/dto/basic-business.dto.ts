@@ -5,7 +5,6 @@ import {
   IsEmail,
   IsPhoneNumber,
   IsOptional,
-  isEmpty,
 } from 'class-validator';
 
 export class BusinessBasicInfoDto {
@@ -17,7 +16,7 @@ export class BusinessBasicInfoDto {
   @IsEnum(['soleProprietor', 'singleMemberLLC', 'limitedLiabilityCompany'], {
     message: 'Invalid business type selected',
   })
-  business_type: string;
+  businessType: string;
 
   @IsString()
   @IsEnum(['restaurants', 'hotelMotel', 'otherFoodServices'], {
@@ -27,11 +26,11 @@ export class BusinessBasicInfoDto {
 
   @IsPhoneNumber(undefined, { message: 'Please provide a valid phone number' })
   @IsNotEmpty({ message: 'Contact phone is required' })
-  contact_phone: string;
+  contactPhone: string;
 
   @IsEmail({}, { message: 'Please provide a valid email address' })
   @IsNotEmpty({ message: 'Contact email is required' })
-  contact_email: string;
+  contactEmail: string;
 
   @IsString()
   @IsNotEmpty({ message: 'Address line 1 is required' })
@@ -55,5 +54,5 @@ export class BusinessBasicInfoDto {
 
   @IsString()
   @IsNotEmpty({ message: 'Postal code is required' })
-  postal_code: string;
+  postalCode: string;
 }

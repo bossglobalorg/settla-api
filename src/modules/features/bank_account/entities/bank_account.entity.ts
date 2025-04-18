@@ -9,7 +9,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm'
 
-import { UserEntity } from '@features/user/entities/user.entity'
+import { User } from '@features/user/entities/user.entity'
 
 @Entity('bank_accounts')
 export class BankAccount {
@@ -61,6 +61,9 @@ export class BankAccount {
   @Column({ type: 'json', nullable: true })
   whitelist: object
 
+  @Column({ nullable: true })
+  balance: number
+
   // Autosweep functionality
   @Column({ default: false })
   autosweepEnabled: boolean
@@ -98,7 +101,7 @@ export class BankAccount {
   @UpdateDateColumn()
   updatedAt: Date
 
-  @ManyToOne(() => UserEntity, (user) => user.bankAccounts)
+  @ManyToOne(() => User, (user) => user.bankAccounts)
   @JoinColumn({ name: 'userId' })
-  user: UserEntity
+  user: User
 }

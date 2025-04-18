@@ -12,7 +12,7 @@ import { GraphModule } from '@providers/graph/graph.module'
 import { GraphService } from '@providers/graph/graph.service'
 import { AppCacheModule } from '@system/app-cache/app-cache.module'
 
-import { UserEntity } from './entities/user.entity'
+import { User } from './entities/user.entity'
 import { AuthService } from './services/auth/auth.service'
 import { JwtStrategy } from './services/auth/strategies/jwt/jwt.strategy'
 import { JwtService } from './services/jwt/jwt.service'
@@ -25,7 +25,7 @@ import { UserKycController } from './user.kyc.controller'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([UserEntity, Business, PartnerReference]),
+    TypeOrmModule.forFeature([User, Business, PartnerReference]),
     HttpModule,
     ConfigModule,
     AppCacheModule,

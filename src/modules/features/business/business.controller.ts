@@ -1,6 +1,3 @@
-import { PartnerEntityType, PartnerName } from 'src/global/enums/partner-reference.enum'
-import { PartnerReferenceService } from 'src/global/services/partner-reference/partner-reference.service'
-
 import {
   Body,
   Controller,
@@ -37,10 +34,7 @@ import { BusinessDocumentFiles, BusinessService } from './services/business/busi
 @UseGuards(JwtAuthGuard)
 @UseFilters(AllExceptionsFilter)
 export class BusinessController {
-  constructor(
-    private readonly businessService: BusinessService,
-    private readonly partnerService: PartnerReferenceService,
-  ) {}
+  constructor(private readonly businessService: BusinessService) {}
 
   @Post('basic-info')
   @UsePipes(ValidationPipe)
@@ -48,73 +42,7 @@ export class BusinessController {
     @Req() req: Request & { user: { id: string; businessName: string } },
     @Body() basicInfoData: BusinessBasicInfoDto,
   ): Promise<{ data: Business; message: string }> {
-    try {
-      const existingBusiness = await this.businessService.findByOwnerId(req.user.id)
-
-      if (existingBusiness.length) {
-        throw new HttpException(
-          {
-            message: 'Business already exists for this user',
-            errors: ['A business has already been created for this user'],
-          },
-          HttpStatus.CONFLICT,
-        )
-      }
-
-      const partnerReference = await this.partnerService.findReference(
-        req.user.id,
-        PartnerEntityType.USER,
-        PartnerName.GRAPH,
-      )
-
-      if (!partnerReference) {
-        throw new HttpException(
-          {
-            message: 'Identity verification required',
-            errors: [
-              'Your account requires KYC verification. Please complete the verification process to access this feature.',
-            ],
-          },
-          HttpStatus.NOT_FOUND,
-        )
-      }
-
-      const businessData = {
-        owner_id: partnerReference.entity_id,
-        partner_entity_id: partnerReference.partner_entity_id,
-        name: req.user.businessName,
-        business_type: basicInfoData.business_type,
-        industry: basicInfoData.industry,
-        contact_phone: basicInfoData.contact_phone,
-        contact_email: basicInfoData.contact_email,
-        address: {
-          line1: basicInfoData.line1,
-          line2: basicInfoData.line2,
-          city: basicInfoData.city,
-          state: basicInfoData.state,
-          country: basicInfoData.country,
-          postal_code: basicInfoData.postal_code,
-        },
-        registration_status: 'basic_info_completed',
-      }
-
-      return {
-        message: 'Business basic information created successfully',
-        data: await this.businessService.createBasicInfo(businessData),
-      }
-    } catch (error) {
-      console.log(error)
-      if (error instanceof HttpException) {
-        throw error
-      }
-      throw new HttpException(
-        {
-          message: 'Failed to create business basic information',
-          errors: [error.message],
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      )
-    }
+    return await this.businessService.createBusinessWithBasicInfo(req.user, basicInfoData)
   }
 
   @Post(':businessId/identification')
@@ -123,29 +51,7 @@ export class BusinessController {
     @Param('businessId') businessId: string,
     @Body() identificationData: BusinessIdentificationDto,
   ): Promise<{ data: Business; message: string }> {
-    try {
-      const formattedData = {
-        ...identificationData,
-        dof: new Date(identificationData.dof),
-        registration_status: 'identification_completed',
-      }
-
-      return {
-        message: 'Business identification information created successfully',
-        data: await this.businessService.addIdentification(businessId, formattedData),
-      }
-    } catch (error) {
-      if (error instanceof HttpException) {
-        throw error
-      }
-      throw new HttpException(
-        {
-          message: 'Failed to add business identification',
-          errors: [error.message],
-        },
-        HttpStatus.INTERNAL_SERVER_ERROR,
-      )
-    }
+    return await this.businessService.updateBusinessIdentification(businessId, identificationData)
   }
 
   @Post(':businessId/documents')

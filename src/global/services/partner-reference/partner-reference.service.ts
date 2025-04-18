@@ -5,7 +5,7 @@ import { BadRequestException, Injectable, NotFoundException } from '@nestjs/comm
 import { InjectRepository } from '@nestjs/typeorm'
 
 import { Business } from '@features/business/entities/business.entity'
-import { UserEntity } from '@features/user/entities/user.entity'
+import { User } from '@features/user/entities/user.entity'
 
 import { PartnerReference } from '../../entities/partner-reference.entity'
 import { PartnerEntityType, PartnerName } from '../../enums/partner-reference.enum'
@@ -24,7 +24,7 @@ export class PartnerReferenceService {
   constructor(
     @InjectRepository(PartnerReference)
     private readonly partnerReferenceRepository: Repository<PartnerReference>,
-    @InjectRepository(UserEntity)
+    @InjectRepository(User)
     private readonly userRepository: Repository<PartnerReference>,
     @InjectRepository(Business)
     private readonly businessRepository: Repository<Business>,
@@ -51,28 +51,28 @@ export class PartnerReferenceService {
 
     const existingReference = await this.partnerReferenceRepository.findOne({
       where: {
-        entity_id: data.entityId,
-        entity_type: data.entityType,
-        partner_name: data.partnerName,
+        entityId: data.entityId,
+        entityType: data.entityType,
+        partnerName: data.partnerName,
       },
     })
 
     if (existingReference) {
       return this.partnerReferenceRepository.save({
         ...existingReference,
-        partner_entity_id: data.partnerEntityId,
+        partnerEntityId: data.partnerEntityId,
         metadata: data.metadata,
-        verification_status: data.verificationStatus,
+        verificationStatus: data.verificationStatus,
       })
     }
 
     const reference = this.partnerReferenceRepository.create({
-      entity_id: data.entityId,
-      entity_type: data.entityType,
-      partner_name: data.partnerName,
-      partner_entity_id: data.partnerEntityId,
+      entityId: data.entityId,
+      entityType: data.entityType,
+      partnerName: data.partnerName,
+      partnerEntityId: data.partnerEntityId,
       metadata: data.metadata,
-      verification_status: data.verificationStatus,
+      verificationStatus: data.verificationStatus,
     })
 
     return await this.partnerReferenceRepository.save(reference)
@@ -85,9 +85,9 @@ export class PartnerReferenceService {
   ): Promise<PartnerReference | null> {
     return await this.partnerReferenceRepository.findOne({
       where: {
-        entity_id: entityId,
-        entity_type: entityType,
-        partner_name: partnerName,
+        entityId: entityId,
+        entityType: entityType,
+        partnerName: partnerName,
       },
     })
   }
@@ -98,8 +98,8 @@ export class PartnerReferenceService {
   ): Promise<PartnerReference[]> {
     return await this.partnerReferenceRepository.find({
       where: {
-        entity_id: entityId,
-        entity_type: entityType,
+        entityId: entityId,
+        entityType: entityType,
       },
     })
   }

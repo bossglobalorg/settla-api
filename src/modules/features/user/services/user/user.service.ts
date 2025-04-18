@@ -9,7 +9,7 @@ import { PartnerReference } from '@global/entities/partner-reference.entity'
 import { PartnerEntityType, PartnerName } from '@global/enums/partner-reference.enum'
 
 import { CreateUserDto } from '../../dto/create-user.dto'
-import { UserEntity } from '../../entities/user.entity'
+import { User } from '../../entities/user.entity'
 import { JwtService } from '../jwt/jwt.service'
 import { OTPService } from '../otp/otp.service'
 import { PasswordService } from '../password/password.service'
@@ -17,8 +17,8 @@ import { PasswordService } from '../password/password.service'
 @Injectable()
 export class UserService {
   constructor(
-    @InjectRepository(UserEntity)
-    private usersRepository: Repository<UserEntity>,
+    @InjectRepository(User)
+    private usersRepository: Repository<User>,
     private readonly passwordService: PasswordService,
     private readonly jwtService: JwtService,
     private readonly mailService: MailService,
@@ -29,7 +29,7 @@ export class UserService {
     private partnerReferenceRepository: Repository<PartnerReference>,
   ) {}
 
-  async isUserExists(email: string): Promise<UserEntity | null> {
+  async isUserExists(email: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: {
         email: email.toLowerCase(),
@@ -37,7 +37,7 @@ export class UserService {
     })
   }
 
-  async createUser(userDto: CreateUserDto): Promise<UserEntity> {
+  async createUser(userDto: CreateUserDto): Promise<User> {
     const userPayload = {
       email: userDto.email.toLowerCase(),
       firstName: userDto.firstName,
@@ -56,11 +56,11 @@ export class UserService {
     return await this.updateUser(newUser)
   }
 
-  async updateUser(newUser: UserEntity): Promise<UserEntity> {
+  async updateUser(newUser: User): Promise<User> {
     return await this.usersRepository.save(newUser)
   }
 
-  async checkUserPassword(user: UserEntity, requestPassword: string): Promise<boolean> {
+  async checkUserPassword(user: User, requestPassword: string): Promise<boolean> {
     return this.passwordService.compare(requestPassword, user.passwordHash)
   }
 
@@ -70,7 +70,7 @@ export class UserService {
     entityType: PartnerEntityType,
   ): Promise<PartnerReference> {
     try {
-      const userBusiness = await this.businessRepository.findOne({ where: { owner_id: userId } })
+      const userBusiness = await this.businessRepository.findOne({ where: { ownerId: userId } })
 
       if (!userBusiness) {
         throw new HttpException(
@@ -86,7 +86,7 @@ export class UserService {
         entityType === PartnerEntityType.BUSINESS ? userBusiness.id || userId : userId
 
       const partnerReference = await this.partnerReferenceRepository.findOne({
-        where: { entity_id: entityId, partner_name: partnerName, entity_type: entityType },
+        where: { entityId, partnerName, entityType },
       })
 
       if (!partnerReference) {
@@ -111,7 +111,7 @@ export class UserService {
     }
   }
 
-  public getUserToken(user: UserEntity): string {
+  public getUserToken(user: User): string {
     return this.jwtService.sign({
       id: user.id,
       email: user.email.toLowerCase(),
@@ -121,10 +121,10 @@ export class UserService {
     })
   }
 
-  public async getUserBusiness(user: UserEntity): Promise<Business | null> {
+  public async getUserBusiness(user: User): Promise<Business | null> {
     return this.businessRepository.findOne({
       where: {
-        owner_id: user.id,
+        ownerId: user.id,
       },
     })
   }
@@ -185,7 +185,7 @@ export class UserService {
     }
   }
 
-  public getAll(): Promise<UserEntity[]> {
+  public getAll(): Promise<User[]> {
     return this.usersRepository.find({
       select: ['id', 'email', 'lastName', 'firstName', 'businessName'],
     })
