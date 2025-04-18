@@ -1,6 +1,7 @@
 import { HttpException, HttpStatus, Injectable } from '@nestjs/common'
 
 import { Business } from '@features/business/entities/business.entity'
+import { SafeUserResponseDto } from '@features/user/dto/safe-user-response.dto'
 
 import { CreateUserDto } from '../../dto/create-user.dto'
 import { LoginDto } from '../../dto/login.dto'
@@ -22,7 +23,7 @@ export class AuthService {
 
   async login(loginRequest: LoginDto): Promise<{
     token: string
-    user: User
+    user: SafeUserResponseDto
     business: Business | null
   } | void> {
     const { email, password } = loginRequest
@@ -41,8 +42,9 @@ export class AuthService {
       const business = await this.userService.getUserBusiness(user)
       user.token = token
       await this.userService.updateUser(user)
+      const userResponse = new SafeUserResponseDto(user)
 
-      return { token, user, business }
+      return { token, user: userResponse, business }
     }
 
     this.failLogin('Incorrect password')
