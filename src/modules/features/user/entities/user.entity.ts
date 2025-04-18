@@ -152,7 +152,7 @@ export class User extends BaseEntity {
       from: (value: any | null): BackgroundInfoDto | null => {
         if (!value) return null
         return {
-          employmentStatus: value.employment_Status,
+          employmentStatus: value.employment_status,
           expectedMonthly: value.expected_monthly,
           occupation: value.occupation,
           primaryPurpose: value.primary_purpose,
