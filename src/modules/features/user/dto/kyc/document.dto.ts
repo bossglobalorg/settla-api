@@ -7,13 +7,13 @@ export class DocumentDto {
 
   @IsISO8601()
   @IsNotEmpty()
-  issue_date: string;
+  issueDate: string;
 
   @IsISO8601()
   @IsNotEmpty()
-  expiry_date: string;
+  expiryDate: string;
 
   @IsString()
   @IsNotEmpty()
-  document_url: string;
+  documentUrl: string;
 }
