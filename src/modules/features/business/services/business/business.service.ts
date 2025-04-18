@@ -109,15 +109,29 @@ export class BusinessService {
       throw new NotFoundException('Business not found')
     }
 
-    // Update individual identification fields
-    business.idType = identificationData.id_type
-    business.idNumber = identificationData.id_number
-    business.idCountry = identificationData.id_country
-    business.idLevel = identificationData.id_level
+    business.idType = identificationData.idType
+    business.idNumber = identificationData.idNumber
+    business.idCountry = identificationData.idCountry
+    business.idLevel = identificationData.idLevel
     business.dof = identificationData.dof
     business.registrationStatus = 'identification_completed'
 
     return await this.businessRepository.save(business)
+  }
+
+  async updateBusinessIdentification(
+    businessId: string,
+    identificationData: BusinessIdentificationDto,
+  ): Promise<{ data: Business; message: string }> {
+    const formattedData = {
+      ...identificationData,
+      dof: new Date(identificationData.dof),
+    }
+
+    return {
+      message: 'Business identification information created successfully',
+      data: await this.addIdentification(businessId, formattedData),
+    }
   }
 
   async processBusinessDocuments(
