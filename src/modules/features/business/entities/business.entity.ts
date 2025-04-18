@@ -53,22 +53,31 @@ export class Business extends BaseEntity {
     type: 'jsonb',
     nullable: true,
     transformer: {
-      to: (value: BusinessAddress): any => ({
-        line1: value.line1,
-        line2: value.line2,
-        city: value.city,
-        state: value.state,
-        country: value.country,
-        postal_code: value.postalCode,
-      }),
-      from: (value: any): BusinessAddress => ({
-        line1: value.line1,
-        line2: value.line2,
-        city: value.city,
-        state: value.state,
-        country: value.country,
-        postalCode: value.postal_code,
-      }),
+      to: (value: BusinessAddress | null | undefined): any => {
+        // Add null check here
+        if (!value) return null
+
+        return {
+          line1: value.line1,
+          line2: value.line2,
+          city: value.city,
+          state: value.state,
+          country: value.country,
+          postal_code: value.postalCode,
+        }
+      },
+      from: (value: any): BusinessAddress | null => {
+        if (!value) return null
+
+        return {
+          line1: value.line1,
+          line2: value.line2,
+          city: value.city,
+          state: value.state,
+          country: value.country,
+          postalCode: value.postal_code,
+        }
+      },
     },
   })
   address: BusinessAddress
