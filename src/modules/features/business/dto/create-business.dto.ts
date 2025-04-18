@@ -1,16 +1,5 @@
 import { Type } from 'class-transformer'
-import {
-  IsEmail,
-  IsEnum,
-  IsISO8601,
-  IsNotEmpty,
-  IsObject,
-  IsOptional,
-  IsPhoneNumber,
-  IsString,
-  ValidateIf,
-  ValidateNested,
-} from 'class-validator'
+import { IsNotEmpty, IsString, ValidateNested } from 'class-validator'
 
 import { BusinessBasicInfoDto } from './basic-business.dto'
 import { BusinessDocumentsDto } from './business-document.dto'
