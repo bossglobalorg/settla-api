@@ -5,6 +5,7 @@ import { BaseEntity } from '@global/entities/base.entity'
 import { PartnerReference } from '@global/entities/partner-reference.entity'
 
 import { Business } from '../../business/entities/business.entity'
+import { BackgroundInfoDto } from '../dto/kyc/background-info.dto'
 import { DocumentDto } from '../dto/kyc/document.dto'
 
 interface UserAddress {
@@ -14,14 +15,6 @@ interface UserAddress {
   state: string
   country: string
   postalCode: string
-}
-
-interface BackgroundInformation {
-  occupation: string
-  primaryPurpose: string
-  sourceOfFunds: string
-  expectedMonthly: string
-  employmentStatus: string
 }
 
 @Entity({
@@ -145,8 +138,30 @@ export class User extends BaseEntity {
     name: 'background_information',
     type: 'jsonb',
     nullable: true,
+    transformer: {
+      to: (value: BackgroundInfoDto | null): any => {
+        if (!value) return null
+        return {
+          employment_status: value.employmentStatus,
+          expected_monthly: value.expectedMonthly,
+          occupation: value.occupation,
+          primary_purpose: value.primaryPurpose,
+          source_of_funds: value.sourceOfFunds,
+        }
+      },
+      from: (value: any | null): BackgroundInfoDto | null => {
+        if (!value) return null
+        return {
+          employmentStatus: value.employment_Status,
+          expectedMonthly: value.expected_monthly,
+          occupation: value.occupation,
+          primaryPurpose: value.primary_purpose,
+          sourceOfFunds: value.source_of_funds,
+        }
+      },
+    },
   })
-  backgroundInformation: BackgroundInformation
+  backgroundInformation: BackgroundInfoDto
 
   @Column({ nullable: true })
   token: string

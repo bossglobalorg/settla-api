@@ -30,7 +30,7 @@ export const mockUserEntity: User = {
     occupation: 'Software Engineer',
     primaryPurpose: '',
     sourceOfFunds: '',
-    expectedMonthly: '',
+    expectedMonthly: 0,
     employmentStatus: '',
   },
   documents: [],

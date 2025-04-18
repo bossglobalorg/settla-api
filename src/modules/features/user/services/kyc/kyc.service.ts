@@ -75,8 +75,9 @@ export class UserKycService {
   async saveBackgroundInfo(userId: string, data: BackgroundInfoDto): Promise<SafeUserResponseDto> {
     const user = await this.findUser(userId)
     Object.assign(user, {
-      background_information: data,
+      backgroundInformation: data,
     })
+
     user.kycStep = 'background'
     const savedUser = await this.userRepository.save(user)
 
