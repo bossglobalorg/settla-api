@@ -7,6 +7,7 @@ import { BackgroundInfoDto } from '@features/user/dto/kyc/background-info.dto'
 import { DocumentDto } from '@features/user/dto/kyc/document.dto'
 import { IdentificationDto } from '@features/user/dto/kyc/identification.dto'
 import { PersonalInfoDto } from '@features/user/dto/kyc/personal-info.dto'
+import { SafeUserResponseDto } from '@features/user/dto/safe-user-response.dto'
 import { GraphService } from '@providers/graph/graph.service'
 
 import { User } from '../../entities/user.entity'
@@ -19,7 +20,7 @@ export class UserKycService {
     private readonly graphService: GraphService,
   ) {}
 
-  async savePersonalInfo(userId: string, data: PersonalInfoDto): Promise<User> {
+  async savePersonalInfo(userId: string, data: PersonalInfoDto): Promise<SafeUserResponseDto> {
     const user = await this.findUser(userId)
 
     const existingUserWithPhone = await this.userRepository.findOne({
@@ -34,10 +35,13 @@ export class UserKycService {
     }
     Object.assign(user, data)
     user.kycStep = 'personal_info'
-    return await this.userRepository.save(user)
+
+    const savedUser = await this.userRepository.save(user)
+
+    return new SafeUserResponseDto(savedUser)
   }
 
-  async saveIdentification(userId: string, data: IdentificationDto): Promise<User> {
+  async saveIdentification(userId: string, data: IdentificationDto): Promise<SafeUserResponseDto> {
     const user = await this.findUser(userId)
     const existingUser = await this.userRepository.findOne({
       where: [
@@ -62,19 +66,24 @@ export class UserKycService {
 
     Object.assign(user, data)
     user.kycStep = 'identification'
-    return await this.userRepository.save(user)
+
+    const savedUser = await this.userRepository.save(user)
+
+    return new SafeUserResponseDto(savedUser)
   }
 
-  async saveBackgroundInfo(userId: string, data: BackgroundInfoDto): Promise<User> {
+  async saveBackgroundInfo(userId: string, data: BackgroundInfoDto): Promise<SafeUserResponseDto> {
     const user = await this.findUser(userId)
     Object.assign(user, {
       background_information: data,
     })
     user.kycStep = 'background'
-    return await this.userRepository.save(user)
+    const savedUser = await this.userRepository.save(user)
+
+    return new SafeUserResponseDto(savedUser)
   }
 
-  async addDocument(userId: string, document: DocumentDto): Promise<User> {
+  async addDocument(userId: string, document: DocumentDto): Promise<SafeUserResponseDto> {
     const user = await this.findUser(userId)
 
     if (!user.documents) {
@@ -91,7 +100,10 @@ export class UserKycService {
         if (verificationResult?.kyc_status === 'verified') {
           user.kycStatus = 'completed'
           user.kycStep = 'completed'
-          return await this.userRepository.save(user)
+
+          const savedUser = await this.userRepository.save(user)
+
+          return new SafeUserResponseDto(savedUser)
         }
 
         throw new Error('KYC verification response was not successful')
@@ -99,7 +111,8 @@ export class UserKycService {
         throw error
       }
     }
-    return updatedUser
+
+    return new SafeUserResponseDto(updatedUser)
   }
 
   private async findUser(userId: string): Promise<User> {

@@ -21,6 +21,7 @@ export class BackgroundInfoDto {
     'salary',
     'investments',
     'pension',
+    'savings',
     'other',
   ])
   sourceOfFunds: string;
