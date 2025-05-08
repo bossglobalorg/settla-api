@@ -84,16 +84,8 @@ export class UserKycService {
     return new SafeUserResponseDto(savedUser)
   }
 
-  async addDocument(userId: string, document: DocumentDto): Promise<SafeUserResponseDto> {
+  async sendDocumentsToKycPartner(userId: string, document: DocumentDto): Promise<SafeUserResponseDto> {
     const user = await this.findUser(userId)
-
-    if (!user.documents) {
-      user.documents = []
-    }
-
-    user.documents.push(document)
-    user.kycStep = 'documents'
-
     const updatedUser = await this.userRepository.save(user)
     if (this.isKycComplete(updatedUser)) {
       try {
