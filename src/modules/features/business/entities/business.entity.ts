@@ -1,5 +1,6 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn } from 'typeorm'
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from 'typeorm'
 
+import { BankAccount } from '@features/bank_account/entities/bank_account.entity'
 import { User } from '@features/user/entities/user.entity'
 import { BaseEntity } from '@global/entities/base.entity'
 
@@ -140,4 +141,7 @@ export class Business extends BaseEntity {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'owner_id' })
   owner: User
+
+  @OneToMany(() => BankAccount, (bankAccount) => bankAccount.user)
+  bankAccounts: BankAccount[]
 }
