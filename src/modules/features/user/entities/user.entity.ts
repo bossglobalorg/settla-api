@@ -57,6 +57,13 @@ export class User extends BaseEntity {
   })
   emailVerified: boolean
 
+  @Column({
+    name: 'email_verified_at',
+    type: 'timestamp',
+    nullable: true,
+  })
+  emailVerifiedAt: Date
+
   @Column({ nullable: true })
   phone: string
 
