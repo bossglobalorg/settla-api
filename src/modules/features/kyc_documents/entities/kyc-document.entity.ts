@@ -51,10 +51,16 @@ export class KycDocument extends BaseEntity {
     type: 'enum',
     enum: KycDocumentType,
   })
-  documentType: KycDocumentType
+  type: KycDocumentType
 
   @Column({ name: 'document_url' })
   documentUrl: string
+
+  @Column({ name: 'issue_date', type: 'timestamp', nullable: true })
+  issueDate: Date
+
+  @Column({ name: 'expiry_date', type: 'timestamp', nullable: true })
+  expiryDate: Date
 
   @Column({ name: 'uploaded_at', type: 'timestamp', default: () => 'CURRENT_TIMESTAMP' })
   uploadedAt: Date
