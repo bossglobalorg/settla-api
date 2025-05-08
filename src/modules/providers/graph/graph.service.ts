@@ -58,8 +58,6 @@ export class GraphService {
       proof_of_address: business.proofOfAddressDoc || null,
     }
 
-    console.log({ formattedData })
-
     try {
       const response = await this.httpService.axiosRef.post(`${baseUrl}/business`, formattedData, {
         headers: {
