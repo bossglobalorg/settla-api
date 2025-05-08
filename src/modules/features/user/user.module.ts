@@ -6,10 +6,11 @@ import { ConfigModule } from '@nestjs/config'
 import { TypeOrmModule } from '@nestjs/typeorm'
 
 import { Business } from '@features/business/entities/business.entity'
+import { KycDocument } from '@features/kyc_documents/entities/kyc-document.entity'
+import { KycDocumentService } from '@features/kyc_documents/kyc-documents.service'
 import { PartnerReferenceService } from '@global/services/partner-reference/partner-reference.service'
 import { CloudinaryService } from '@providers/cloudinary/cloudinary.service'
 import { GraphModule } from '@providers/graph/graph.module'
-import { GraphService } from '@providers/graph/graph.service'
 import { AppCacheModule } from '@system/app-cache/app-cache.module'
 
 import { User } from './entities/user.entity'
@@ -25,7 +26,7 @@ import { UserKycController } from './user.kyc.controller'
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, Business, PartnerReference]),
+    TypeOrmModule.forFeature([User, Business, PartnerReference, KycDocument]),
     HttpModule,
     ConfigModule,
     AppCacheModule,
@@ -42,6 +43,7 @@ import { UserKycController } from './user.kyc.controller'
     UserKycService,
     PartnerReferenceService,
     CloudinaryService,
+    KycDocumentService,
   ],
   exports: [UserService],
 })
