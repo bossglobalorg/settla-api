@@ -12,6 +12,7 @@ export const mockUserEntity: User = {
   emailVerified: false,
   phone: 'null',
   dob: new Date('dateString'),
+  emailVerifiedAt: new Date('datestring'),
   idLevel: 'primary',
   idType: 'null',
   idNumber: 'null',
